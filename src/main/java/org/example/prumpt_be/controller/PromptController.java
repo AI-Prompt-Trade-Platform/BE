@@ -13,6 +13,7 @@ public class PromptController {
 
     private final PromptService promptService;
 
+
     @GetMapping("/{id}")
     public ResponseEntity<PromptDetailDTO> getPromptDetail(@PathVariable Long id) {
         PromptDetailDTO dto = promptService.getPromptDetail(id);
