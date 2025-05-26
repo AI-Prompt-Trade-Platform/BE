@@ -14,4 +14,9 @@ public class Tag {
     private Long id;
 
     private String name;
+
+    //name만 받는 생성자 추가
+    public Tag(String name) {
+        this.name = name;
+    }
 }

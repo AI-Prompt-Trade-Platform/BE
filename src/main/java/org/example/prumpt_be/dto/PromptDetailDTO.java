@@ -18,7 +18,7 @@ public class PromptDetailDTO {
     private String authorProfile;
     private String categoryName;
     private List<String> tags;
-    private boolean bookmarked;
+    private boolean wishList;
     private double averageRating;
     private List<ReviewDTO> reviews;
 }
