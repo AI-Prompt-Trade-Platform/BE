@@ -18,7 +18,7 @@ public class PromptReviews {
     @JoinColumn(name = "purchaseId", referencedColumnName = "purchaseID", nullable = false, unique = true)
     private Purchases purchaseId;
     @ManyToOne
-    @JoinColumn(name = "promptId", referencedColumnName = "promptID", nullable = false, unique = true)
+    @JoinColumn(name = "promptId", referencedColumnName = "promptID", nullable = false)
     private Prompts promptId;
     @Column
     private int rate;

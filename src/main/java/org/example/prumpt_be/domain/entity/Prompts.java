@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "prompts")
 public class Prompts {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "promptID")
     private Integer promptID;
 
@@ -27,8 +28,8 @@ public class Prompts {
     @Column
     private String ai_inspection_rate;
 
-    @OneToOne
-    @JoinColumn(name = "owner_id", referencedColumnName = "userID", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "owner_id", referencedColumnName = "userID", nullable = false)
     private Users ownerID;
 
     @Column

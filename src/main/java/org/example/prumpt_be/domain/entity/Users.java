@@ -25,9 +25,9 @@ public class Users {
     private String email;
 
     @Column(nullable = false)
-    private int emailVerified;
+    private Boolean emailVerified;
 
-    @Column
+    @Column(nullable = false,  columnDefinition = "INT DEFAULT 0")
     private int point;
 
     @Column(nullable = false)
@@ -49,5 +49,5 @@ public class Users {
     private LocalDateTime createdAt;
 
     @Column
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 }
