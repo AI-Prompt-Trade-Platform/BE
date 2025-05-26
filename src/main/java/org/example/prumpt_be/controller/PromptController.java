@@ -52,7 +52,6 @@ public class PromptController {
         return ResponseEntity.ok().build();
     }
 
-
     //프롬프트 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePrompt(@PathVariable Long id) {
