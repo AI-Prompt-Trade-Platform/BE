@@ -25,13 +25,13 @@ public class Users {
     private String email;
 
     @Column(nullable = false)
-    private int email_verified;
+    private int emailVerified;
 
     @Column
     private int point;
 
     @Column(nullable = false)
-    private String profile_name;
+    private String profileName;
 
     @Column(columnDefinition = "TEXT")
     private String introduction;

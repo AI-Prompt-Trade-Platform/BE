@@ -1,6 +1,7 @@
 package org.example.prumpt_be.repository;
 
 import org.example.prumpt_be.domain.entity.UserSalesSummary;
+import org.example.prumpt_be.dto.response.EachDaysProfitDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 
 @Repository
 public interface UserSalesSummaryRepository
@@ -37,5 +39,24 @@ public interface UserSalesSummaryRepository
                 .minusDays(1);
         return findTotalRevenueByUserIdAndPeriod(userId, yesterday, yesterday);
     }
+
+    //특정 기간동안 수익이 있던 날들의 데이터 출력
+    //수익0원인 날들은 반환 안되어서 FE에서 처리해야함
+    @Query("""
+        SELECT new org.example.prumpt_be.dto.response.EachDaysProfitDto(
+                 u.summaryDate,
+                 u.totalRevenue
+               )
+          FROM UserSalesSummary u
+         WHERE u.user.userID   = :userId
+           AND u.summaryDate  >= :startDate
+           AND u.summaryDate  <= :endDate
+         ORDER BY u.summaryDate
+    """)
+    List<EachDaysProfitDto> findDailyRevenueByUserAndPeriod(
+            @Param("userId")    Integer  userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate")   LocalDate endDate
+    );
 
 }
