@@ -16,6 +16,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class TestDataLoader {
@@ -23,7 +25,7 @@ public class TestDataLoader {
     private final UsersRepository usersRepo;
     private final PromptsRepository promptsRepo;
     private final UserSalesSummaryRepository summaryRepo;
-    private final PurchasesRepository purchasesRepository;
+    private final PurchasesRepository purchasesRepo;
 
     public TestDataLoader(UsersRepository usersRepo,
                           PromptsRepository promptsRepo,
@@ -31,7 +33,7 @@ public class TestDataLoader {
         this.usersRepo    = usersRepo;
         this.promptsRepo  = promptsRepo;
         this.summaryRepo  = summaryRepo;
-        this.purchasesRepository = purchasesRepository;
+        this.purchasesRepo = purchasesRepository;
     }
 
     /**
@@ -41,81 +43,111 @@ public class TestDataLoader {
     public void loadAllDummyData() {
         createDummyUsers();
         createDummyPrompts();
-        createDummyUserSalesSummaries();
         createDummyPurchases();
+        createDummyUserSalesSummaries();
     }
 
-    @Transactional
+    //유저 더미데이터
     public void createDummyUsers() {
         for (int i = 1; i <= 10; i++) {
-            Users u = new Users();
-            u.setUserID(i);
-            u.setAuth0_id("auth0-user-" + i);
-            u.setEmail("user" + i + "@example.com");
-            u.setEmailVerified(1);
-            u.setPoint(1000);
-            u.setProfileName("User " + i);
-            u.setIntroduction("This is user " + i);
-            u.setProfileImg_url("https://example.com/avatar" + i + ".png");
-            u.setBannerImg_url("https://example.com/banner" + i + ".png");
-            u.setUser_role("ROLE_USER");
-            u.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(10 - i));
-            u.setUpdated_at(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
-            usersRepo.save(u);
+            Users user = new Users();
+//            user.setUserID(i); //자동증가로 바꿔서 DB가 처리
+            user.setAuth0_id("auth0-user-" + i);
+            user.setEmail("user" + i + "@example.com");
+            user.setEmailVerified(1);
+            user.setPoint(1000);
+            user.setProfileName("User " + i);
+            user.setIntroduction("This is user " + i);
+            user.setProfileImg_url("https://example.com/avatar" + i + ".png");
+            user.setBannerImg_url("https://example.com/banner" + i + ".png");
+            user.setUser_role("ROLE_USER");
+            user.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(10 - i));
+            user.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
+            usersRepo.save(user);
         }
     }
 
-    @Transactional
+    //프롬프트 더미데이터
     public void createDummyPrompts() {
         List<Users> users = usersRepo.findAll();
-        int nextPromptId = 1;
-        for (Users owner : users) {
-            Prompts p = new Prompts();
-            p.setPromptID(nextPromptId++);
-            p.setPrompt_name("Sample Prompt " + p.getPromptID());
-            p.setPrompt_content("This is the content of prompt " + p.getPromptID());
-            p.setPrice(100 * p.getPromptID());
-            p.setAi_inspection_rate("0.0");
-            p.setOwnerID(owner);
-            p.setExample_content_url("https://example.com/prompt" + p.getPromptID() + "/example.png");
-            p.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(p.getPromptID()));
-            p.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
-            promptsRepo.save(p);
+        int promptSeq = 1;
+        for (Users user : users) {
+            for (int i = 1; i <= 5; i++) {
+                Prompts prompt = new Prompts();
+                // promptID는 auto-increment이므로 set하지 않음
+                prompt.setPrompt_name("User" + user.getUserID() + " Prompt " + i);
+                prompt.setPrompt_content("Content for User" + user.getUserID() + "'s Prompt " + i);
+                prompt.setPrice(1000 + i * 100);
+                prompt.setAi_inspection_rate("0.0");
+                prompt.setOwnerID(user);
+                prompt.setExample_content_url("https://example.com/user" + user.getUserID() + "/prompt" + i + ".png");
+                prompt.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(promptSeq));
+                prompt.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
+                promptsRepo.save(prompt);
+                promptSeq++;
+            }
         }
     }
 
-    @Transactional
+    //거래 더미데이터
+    public void createDummyPurchases() {
+        List<Users> users = usersRepo.findAll();
+        List<Prompts> prompts = promptsRepo.findAll();
+        Random random = new Random();
+
+        // 예시: 30건의 랜덤 구매 기록 생성
+        for (int i = 0; i < 30; i++) {
+            Purchases purchase = new Purchases();
+            Users buyer = users.get(random.nextInt(users.size()));
+            Prompts prompt = prompts.get(random.nextInt(prompts.size()));
+
+            purchase.setBuyer(buyer);
+            purchase.setPromptId(prompt);
+            // purchasedAt은 @PrePersist로 자동 설정됨
+            purchasesRepo.save(purchase);
+        }
+    }
+
+    //판매 요약 더미데이터
     public void createDummyUserSalesSummaries() {
         List<Users> users = usersRepo.findAll();
-        LocalDate summaryDate = LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(1);
-        LocalDateTime now     = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        List<Purchases> purchases = purchasesRepo.findAll();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
-        for (int i = 0; i < users.size(); i++) {
-            Users user = users.get(i);
-            UserSalesSummary s = new UserSalesSummary();
-            s.setUser(user);
-            s.setSoldCount(i * 2 + 1);  // 예: 1, 3, 5, …
-            s.setTotalRevenue(BigDecimal.valueOf((i * 2 + 1) * 100L));
-            s.setSummaryDate(summaryDate); //유저가 10명이라서 10일전까지만 만들어짐
-            s.setLastUpdated(now.minusHours(users.size() - i));
-            summaryRepo.save(s);
-        }
-    }
+        for (Users user : users) {
+            // 해당 유저가 소유한 프롬프트 ID 목록
+            List<Integer> ownedPromptIds = promptsRepo.findAll().stream()
+                    .filter(p -> p.getOwnerID().getUserID() == user.getUserID())
+                    .map(Prompts::getPromptID)
+                    .toList();
 
-    @Transactional
-    public void createDummyPurchases() {
-        // 1) 사용자와 프롬프트 리스트 조회
-        List<Users> users   = usersRepo.findAll();
-        List<Prompts> prompts = promptsRepo.findAll();
+            // 해당 유저의 프롬프트가 판매된 Purchases만 필터링
+            List<Purchases> userPromptSales = purchases.stream()
+                    .filter(pur -> ownedPromptIds.contains(pur.getPromptId().getPromptID()))
+                    .toList();
 
-        // 2) 10건의 더미 구매 기록 생성
-        for (int i = 0; i < 10; i++) {
-            Purchases purchase = new Purchases();
-            // Round-robin 방식으로 buyer, prompt 지정
-            purchase.setBuyer(users.get(i % users.size()));
-            purchase.setPromptId(prompts.get(i % prompts.size()));
-            // purchasedAt은 @PrePersist 에서 현재 시간으로 자동 설정됨
-            purchasesRepository.save(purchase);
+            int soldCount = userPromptSales.size();
+            int totalRevenue = userPromptSales.stream()
+                    .mapToInt(pur -> pur.getPromptId().getPrice())
+                    .sum();
+
+            // 랜덤 날짜 생성 (예: 지난 30일 내)
+            LocalDate randomDate = LocalDate.ofEpochDay(
+                    ThreadLocalRandom.current().nextLong(
+                            LocalDate.now().minusDays(30).toEpochDay(),
+                            LocalDate.now().toEpochDay()
+                    )
+            );
+
+            UserSalesSummary summary = new UserSalesSummary();
+            summary.setUserId(user.getUserID()); // 복합키 필수
+            summary.setSummaryDate(randomDate); // 랜덤 날짜 설정
+            summary.setUser(usersRepo.findById(user.getUserID()).orElseThrow());
+            summary.setSoldCount(soldCount);
+            summary.setTotalRevenue(BigDecimal.valueOf(totalRevenue));
+            summary.setLastUpdated(now);
+
+            summaryRepo.save(summary);
         }
     }
 }

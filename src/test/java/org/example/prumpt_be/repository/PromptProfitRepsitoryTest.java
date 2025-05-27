@@ -1,5 +1,6 @@
 package org.example.prumpt_be.repository;
 
+import org.example.prumpt_be.domain.entity.UserSalesSummary;
 import org.example.prumpt_be.dto.response.EachDaysProfitDto;
 import org.example.prumpt_be.test.TestDataLoader;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,10 +25,10 @@ public class PromptProfitRepsitoryTest {
     private TestDataLoader testDataLoader;
 
     //더미데이터 생성(Prompts, Users, Purchases)
-    @BeforeEach
-    void createDummy() {
-        testDataLoader.loadAllDummyData();
-    }
+//    @BeforeEach
+//    void createDummy() {
+//        testDataLoader.loadAllDummyData();
+//    }
 
     @Autowired
     private PromptsRepository promptsRepository;
@@ -46,29 +48,27 @@ public class PromptProfitRepsitoryTest {
         promptsRepository.deleteAll();      // Prompts
         usersRepository.deleteAll();        // Users
 
+        testDataLoader.loadAllDummyData();
     }
 
 
+//    =========================== 테스트 코드 ===============================
     @Test
-    @DisplayName("특정사용자, 기간으로 수익 조회")
-    void FindYesterdayRevenueTest() {
-        setUp();
-        createDummy();
-        LocalDate start = LocalDate.parse("2025-05-20");    // 기본 ISO 포맷
-        LocalDate end   = LocalDate.parse("2025-05-25");
+    @DisplayName("특정사용자, 기간으로 총 수익 조회")
+    void FindTotalProfitByUserIDTest() {
+        LocalDate start = LocalDate.parse("2024-05-27");    // 기본 ISO 포맷
+        LocalDate end   = LocalDate.parse("2025-05-28");
 
-        BigDecimal revenue = userSalesSummaryRepository.findTotalRevenueByUserIdAndPeriod(2, start, end);
+        BigDecimal revenue = userSalesSummaryRepository.findTotalRevenueByUserIdAndPeriod(3, start, end);
         String formatted = NumberFormat.getNumberInstance(Locale.KOREA).format(revenue);
-        System.out.printf("사용자ID: %d, 기간: %s ~ %s, 총 수익: %s원%n", 2, start, end, formatted);
+        System.out.printf("사용자ID: %d, 기간: %s ~ %s, 총 수익: %s원%n", 3, start, end, formatted);
     }
 
     @Test
-    @DisplayName("차트 그리기 위한 각 날짜별 전체 데이터 조회")
-    void FindAllRevenueTest() {
-        setUp();
-        createDummy();
-        LocalDate start = LocalDate.parse("2025-05-17");    // 기본 ISO 포맷
-        LocalDate end   = LocalDate.parse("2025-05-25");
+    @DisplayName("특정 기간동안 수익이 있던 날들의 데이터 조회 (차트 그리기 용도)") //todo: 수익 0원인날은 안나와서 FE에서 처리해서 그려야함
+    void FindAllProfitsDaysTest() {
+        LocalDate start = LocalDate.parse("2025-05-20");    // 기본 ISO 포맷
+        LocalDate end   = LocalDate.parse("2025-05-27");
 
         List<EachDaysProfitDto> dailyList = userSalesSummaryRepository.findDailyRevenueByUserAndPeriod(3, start, end);
         NumberFormat formatter = NumberFormat.getNumberInstance(Locale.KOREA);
@@ -76,7 +76,16 @@ public class PromptProfitRepsitoryTest {
         System.out.println("날짜별 수익 내역:");
         for (EachDaysProfitDto dto : dailyList) {
             String formattedRevenue = formatter.format(dto.getTotalRevenue());
-            System.out.printf("날짜: %s, 수익: %s원%n", dto.getSummaryDate(), formattedRevenue);
+            System.out.printf("기간: %s ~ %s | 날짜: %s | 수익: %s원%n", start, end, dto.getSummaryDate(), formattedRevenue);
         }
+    }
+
+    @Test
+    @DisplayName("조회한 날의 어제자 수익 조회")
+    void FindYesterdayProfitTest() {
+        int userId = 2;
+        LocalDate yesterday = LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(1);
+        BigDecimal yesterdayProfit = userSalesSummaryRepository.findYesterdayRevenueByUserId(userId, yesterday);
+        System.out.printf("사용자: %d | 어제 수익: %s%n", userId ,yesterdayProfit);
     }
 }

@@ -51,7 +51,7 @@ public class MoniteringService {
         List<EachDaysProfitDto> result = new ArrayList<>();
         for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
             BigDecimal revenue = revenueMap.getOrDefault(date, BigDecimal.ZERO);
-            result.add(new EachDaysProfitDto(date, revenue));
+            result.add(new EachDaysProfitDto(userId, date, revenue));
         }
         return result;
     }
