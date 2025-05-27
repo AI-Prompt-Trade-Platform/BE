@@ -1,16 +1,9 @@
 package org.example.prumpt_be.test;
 
-import org.example.prumpt_be.domain.entity.Prompts;
-import org.example.prumpt_be.domain.entity.Purchases;
-import org.example.prumpt_be.domain.entity.UserSalesSummary;
-import org.example.prumpt_be.domain.entity.Users;
-import org.example.prumpt_be.repository.PromptsRepository;
-import org.example.prumpt_be.repository.PurchasesRepository;
-import org.example.prumpt_be.repository.UserSalesSummaryRepository;
-import org.example.prumpt_be.repository.UsersRepository;
+import org.example.prumpt_be.domain.entity.*;
+import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,14 +19,16 @@ public class TestDataLoader {
     private final PromptsRepository promptsRepo;
     private final UserSalesSummaryRepository summaryRepo;
     private final PurchasesRepository purchasesRepo;
+    private final PromptReviewsRepository promptReviewsRepo;
 
     public TestDataLoader(UsersRepository usersRepo,
                           PromptsRepository promptsRepo,
-                          UserSalesSummaryRepository summaryRepo, PurchasesRepository purchasesRepository) {
+                          UserSalesSummaryRepository summaryRepo, PurchasesRepository purchasesRepository, PromptReviewsRepository promptReviewsRepo) {
         this.usersRepo    = usersRepo;
         this.promptsRepo  = promptsRepo;
         this.summaryRepo  = summaryRepo;
         this.purchasesRepo = purchasesRepository;
+        this.promptReviewsRepo = promptReviewsRepo;
     }
 
     /**
@@ -45,6 +40,7 @@ public class TestDataLoader {
         createDummyPrompts();
         createDummyPurchases();
         createDummyUserSalesSummaries();
+        createDummyPromptReviews();
     }
 
     //유저 더미데이터
@@ -148,6 +144,33 @@ public class TestDataLoader {
             summary.setLastUpdated(now);
 
             summaryRepo.save(summary);
+        }
+    }
+
+    public void createDummyPromptReviews() {
+        List<Prompts> prompts = promptsRepo.findAll(); //모든 프롬프트 데이터 조회
+        List<Purchases> purchases = purchasesRepo.findAll(); //모든 거래이력 데이터 조회
+        Random random = new Random();
+
+        for (Prompts prompt : prompts) {
+            int reviewCount = random.nextInt(6); // 0~5개 리뷰 생성
+            // 해당 프롬프트를 구매한 구매내역만 필터링
+            List<Purchases> promptPurchases = purchases.stream()
+                    .filter(p -> p.getPromptId().getPromptID() == prompt.getPromptID())
+                    .toList();
+
+            for (int i = 0; i < reviewCount && i < promptPurchases.size(); i++) {
+                Purchases purchase = promptPurchases.get(i);
+                PromptReviews review = new PromptReviews();
+                review.setPromptId(prompt);
+                review.setPurchaseId(purchase);
+                review.setRate(1 + random.nextInt(5)); // 1~5점
+                review.setReviewContent("리뷰 내용 " + (i + 1) + " for 프롬프트 " + prompt.getPromptID());
+                // reviewedAt, updatedAt은 @PrePersist/@PreUpdate로 자동 설정
+                // 필요시 직접 지정 가능: review.setReviewedAt(LocalDateTime.now());
+                // 저장
+                 promptReviewsRepo.save(review); // PromptReviewsRepository 필요
+            }
         }
     }
 }

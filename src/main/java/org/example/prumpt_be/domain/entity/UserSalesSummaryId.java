@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
+// UserSalesSummary 엔티티의 복합키를 위한 클래스
 public class UserSalesSummaryId implements Serializable {
     private Integer userId;
     private LocalDate summaryDate;
