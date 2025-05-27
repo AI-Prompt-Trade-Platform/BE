@@ -1,9 +1,6 @@
 package org.example.prumpt_be.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 public class Users {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "userID")
     private int userID;
 
@@ -25,7 +23,7 @@ public class Users {
     private String email;
 
     @Column(nullable = false)
-    private Boolean emailVerified;
+    private int emailVerified;
 
     @Column(nullable = false,  columnDefinition = "INT DEFAULT 0")
     private int point;

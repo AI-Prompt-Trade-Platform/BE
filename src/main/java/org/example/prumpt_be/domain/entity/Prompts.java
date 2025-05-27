@@ -14,7 +14,7 @@ public class Prompts {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "promptID")
-    private Integer promptID;
+    private int promptID;
 
     @Column(nullable = false)
     private String prompt_name;
