@@ -16,7 +16,7 @@ import java.util.List;
 public interface UserSalesSummaryRepository
     extends JpaRepository<UserSalesSummary, Integer> {
 
-    //지정된 기간(startDate ~ endDate) 동안의 판매 합계 조회 메소드
+    //지정된 기간(startDate ~ endDate) 동안의 판매 합계 조회
     //데이터 없으면 0 반환
     @Query("""
        SELECT COALESCE(SUM(u.totalRevenue), 0)
@@ -25,25 +25,29 @@ public interface UserSalesSummaryRepository
           AND u.summaryDate  >= :startDate
           AND u.summaryDate  <= :endDate
     """)
-    BigDecimal findTotalRevenueByUserIdAndPeriod(
+    BigDecimal findTotalRevenueByUserIdAndPeriod(                  //todo: Repo 테스트 (완)
             @Param("userId")    Integer  userId, //사용자Id 입력
             @Param("startDate") LocalDate startDate, //조회 기간 시작일
             @Param("endDate")   LocalDate endDate //조회 기간 종료일
     );
 
     //조회한 날의 어제자 수익 반환 메소드
-    default BigDecimal findTotalRevenueByUserIdAndPeriod(Integer userId) {
-        // Asia/Seoul 타임존 기준, 어제 날짜만 계산
-        LocalDate yesterday = LocalDate
-                .now(ZoneId.of("Asia/Seoul"))
-                .minusDays(1);
-        return findTotalRevenueByUserIdAndPeriod(userId, yesterday, yesterday);
-    }
+    @Query("""
+   SELECT COALESCE(SUM(u.totalRevenue), 0)
+     FROM UserSalesSummary u
+    WHERE u.user.userID  = :userId
+      AND u.summaryDate  = :yesterday
+""")
+    BigDecimal findYesterdayRevenueByUserId(               //todo: Repo 테스트 (완)
+            @Param("userId") Integer userId,
+            @Param("yesterday") LocalDate yesterday //Service 계층에서 어제날짜를 입력 해줘야함
+    );
 
-    //특정 기간동안 수익이 있던 날들의 데이터 출력
+    //특정 기간동안 수익이 있던 날들의 데이터 출력 (차트 그리기용)
     //수익0원인 날들은 반환 안되어서 FE에서 처리해야함
     @Query("""
         SELECT new org.example.prumpt_be.dto.response.EachDaysProfitDto(
+                 u.userId,
                  u.summaryDate,
                  u.totalRevenue
                )
@@ -53,10 +57,21 @@ public interface UserSalesSummaryRepository
            AND u.summaryDate  <= :endDate
          ORDER BY u.summaryDate
     """)
-    List<EachDaysProfitDto> findDailyRevenueByUserAndPeriod(
+    List<EachDaysProfitDto> findDailyRevenueByUserAndPeriod(               //todo: Repo 테스트 (완)
             @Param("userId")    Integer  userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate")   LocalDate endDate
     );
+
+
+
+    //특정 유저의 프롬프트들 전체 별점 평균 조회
+    @Query(value = "SELECT AVG(avg_rate) FROM (" +
+            "SELECT AVG(rate) as avg_rate FROM prompt_reviews r " +
+            "JOIN prompts p ON r.promptId = p.promptID " +
+            "WHERE p.owner_id = :userId " +
+            "GROUP BY r.promptId" +
+            ") as sub", nativeQuery = true)
+    Double findAvgOfPromptAvgRatesByUserId(@Param("userId") int userId);
 
 }
