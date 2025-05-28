@@ -15,13 +15,16 @@ public class PromptReviews {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int reviewID;
     @OneToOne
-    @JoinColumn(name = "purchaseId", referencedColumnName = "purchaseID", nullable = false, unique = true)
-    private Purchases purchaseId;
+    @JoinColumn(name = "purchase_id", referencedColumnName = "purchaseID", nullable = false, unique = true)
+    private Purchases purchaseID;
     @ManyToOne
-    @JoinColumn(name = "promptId", referencedColumnName = "promptID", nullable = false)
-    private Prompts promptId;
+    @JoinColumn(name = "prompt_id", referencedColumnName = "promptID", nullable = false)
+    private Prompts promptID;
+    @ManyToOne
+    @JoinColumn(name = "reviewer_id", referencedColumnName = "userID", nullable = false)
+    private Users reviewerID;
     @Column
-    private int rate;
+    private Double rate;
     @Column
     private String reviewContent;
     @Column
@@ -38,5 +41,16 @@ public class PromptReviews {
     @PreUpdate //엔티티가 수정되기 전 실행
     public void preUpdate() {
         this.updatedAt = java.time.LocalDateTime.now();
+    }
+
+
+    public void setPromptId(Prompts prompt) {
+        this.promptID = prompt;
+    }
+    public void setPurchaseId(Purchases purchase) {
+        this.purchaseID = purchase;
+    }
+    public void setReviewer(Users reviewer) {
+        this.reviewerID = reviewer;
     }
 }

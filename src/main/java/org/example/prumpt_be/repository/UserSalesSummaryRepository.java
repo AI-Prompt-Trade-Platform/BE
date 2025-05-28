@@ -65,13 +65,5 @@ public interface UserSalesSummaryRepository
 
 
 
-    //특정 유저의 프롬프트들 전체 별점 평균 조회
-    @Query(value = "SELECT AVG(avg_rate) FROM (" +
-            "SELECT AVG(rate) as avg_rate FROM prompt_reviews r " +
-            "JOIN prompts p ON r.promptId = p.promptID " +
-            "WHERE p.owner_id = :userId " +
-            "GROUP BY r.promptId" +
-            ") as sub", nativeQuery = true)
-    Double findAvgOfPromptAvgRatesByUserId(@Param("userId") int userId);
 
 }
