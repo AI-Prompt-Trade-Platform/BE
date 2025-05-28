@@ -150,6 +150,7 @@ public class TestDataLoader {
     public void createDummyPromptReviews() {
         List<Prompts> prompts = promptsRepo.findAll(); //모든 프롬프트 데이터 조회
         List<Purchases> purchases = purchasesRepo.findAll(); //모든 거래이력 데이터 조회
+        List<Users> users = usersRepo.findAll();
         Random random = new Random();
 
         for (Prompts prompt : prompts) {
@@ -160,16 +161,16 @@ public class TestDataLoader {
                     .toList();
 
             for (int i = 0; i < reviewCount && i < promptPurchases.size(); i++) {
+                int randHalf = 1 + random.nextInt(10);
                 Purchases purchase = promptPurchases.get(i);
                 PromptReviews review = new PromptReviews();
                 review.setPromptId(prompt);
                 review.setPurchaseId(purchase);
-                review.setRate(1 + random.nextInt(5)); // 1~5점
-                review.setReviewContent("리뷰 내용 " + (i + 1) + " for 프롬프트 " + prompt.getPromptID());
+                review.setRate(randHalf * 0.5);        // 0.5 단위 (1.0~5.0)
+                review.setReviewer(purchase.getBuyer());
                 // reviewedAt, updatedAt은 @PrePersist/@PreUpdate로 자동 설정
                 // 필요시 직접 지정 가능: review.setReviewedAt(LocalDateTime.now());
-                // 저장
-                 promptReviewsRepo.save(review); // PromptReviewsRepository 필요
+                 promptReviewsRepo.save(review);
             }
         }
     }
