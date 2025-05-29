@@ -16,4 +16,5 @@ public class UserProfileController {
     public UserMypageResponse getUserProfile(@PathVariable Long userId) {
         return userProfileService.getUserProfile(userId);
     }
+
 }

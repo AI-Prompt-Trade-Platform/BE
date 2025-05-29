@@ -1,12 +1,17 @@
 package org.example.prumpt_be.dto.response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.example.prumpt_be.dto.response.PromptSummary;
+
+import java.util.List;
 
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UserMypageResponse {
     private Long userId;
     private String profileName;
@@ -14,5 +19,8 @@ public class UserMypageResponse {
     private String bannerImgUrl;
     private String introduction;
     private String userRole;
-    private Integer point;
+    private int point;
+    private List<PromptSummary> sellingPrompts;
+    private List<PromptSummary> completedPurchases;
+    private List<PromptSummary> ongoingPurchases;
 }
