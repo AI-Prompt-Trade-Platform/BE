@@ -3,6 +3,7 @@ package org.example.prumpt_be.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -10,36 +11,54 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "prompts")
 public class Prompt {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "prompt_id")
+    private Long promptId;
 
-    private String title;
+    @Column(name = "prompt_name", nullable = false)
+    private String name;
 
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "prompt_content", columnDefinition = "TEXT")
     private String content;
 
     private int price;
 
-    @ManyToOne
-    @JoinColumn(name = "author_id")
-    private User author;
+    @Column(name = "ai_inspection_rate")
+    private String aiInspectionRate;
+
+    @Column(name = "example_content_url")
+    private String exampleContentUrl;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
+    @OneToOne(mappedBy = "prompt", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private PromptClassification classification;
+
+
 
     @ManyToMany
     @JoinTable(
-        name = "prompt_tag",
-        joinColumns = @JoinColumn(name = "prompt_id"),
-        inverseJoinColumns = @JoinColumn(name = "tag_id")
+            name = "prompt_tag",
+            joinColumns = @JoinColumn(name = "prompt_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private List<Tag> tags;
 
     @OneToMany(mappedBy = "prompt")
     private List<Review> reviews;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

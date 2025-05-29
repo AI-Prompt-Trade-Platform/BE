@@ -5,17 +5,12 @@ import org.example.prumpt_be.dto.PromptDetailDTO;
 import org.example.prumpt_be.dto.ReviewDTO;
 import org.example.prumpt_be.dto.request.PromptCreateRequestDTO;
 import org.example.prumpt_be.dto.request.PromptUpdateRequestDTO;
-import org.example.prumpt_be.entity.Category;
-import org.example.prumpt_be.entity.Prompt;
-import org.example.prumpt_be.entity.Tag;
-import org.example.prumpt_be.entity.User;
-import org.example.prumpt_be.repository.CategoryRepository;
-import org.example.prumpt_be.repository.PromptRepository;
-import org.example.prumpt_be.repository.TagRepository;
-import org.example.prumpt_be.repository.UserRepository;
+import org.example.prumpt_be.entity.*;
+import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,100 +19,111 @@ import java.util.stream.Collectors;
 public class PromptService {
 
     private final PromptRepository promptRepository;
-    private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
+    private final PromptClassificationRepository promptClassificationRepository;
+    private final ModelCategoryRepository modelCategoryRepository;
+    private final TypeCategoryRepository typeCategoryRepository;
 
-    //프롬프트 상세 조회
+    // 프론프트 상세 조회
     public PromptDetailDTO getPromptDetail(Long id) {
         return promptRepository.findById(id)
                 .map(prompt -> {
                     double avgRating = prompt.getReviews().stream()
-                            .mapToInt(r -> r.getRating())
-                            .average()
-                            .orElse(0);
+                            .mapToInt(Review::getRating)
+                            .average().orElse(0);
+
+                    PromptClassification classification = prompt.getClassification();
 
                     return new PromptDetailDTO(
-                            prompt.getId(),
-                            prompt.getTitle(),
+                            prompt.getPromptId(),
+                            prompt.getName(),
                             prompt.getDescription(),
                             prompt.getContent(),
                             prompt.getPrice(),
-                            prompt.getAuthor().getUsername(),
-                            prompt.getAuthor().getProfile(),
-                            prompt.getCategory().getName(),
-                            prompt.getTags().stream()
-                                    .map(Tag::getName)
-                                    .toList(),
-                            false, // TODO 위시리스트와 연결 필요
+                            prompt.getOwner().getUsername(),
+                            prompt.getOwner().getProfile(),
+                            "", // categoryName 미사용
+                            prompt.getTags().stream().map(Tag::getName).toList(),
+                            false, // 위시리스트 여부 추후 구현
                             avgRating,
                             prompt.getReviews().stream()
-                                    .map(r -> new ReviewDTO(
-                                            r.getUser().getUsername(),
-                                            r.getRating(),
-                                            r.getContent()))
-                                    .toList()
+                                    .map(r -> new ReviewDTO(r.getUser().getUsername(), r.getRating(), r.getContent()))
+                                    .toList(),
+                            classification != null ? classification.getModelCategory().getModelName() : "",
+                            classification != null ? classification.getTypeCategory().getTypeName() : ""
                     );
                 })
                 .orElseThrow(() -> new RuntimeException("Prompt not found"));
     }
 
-    //프롬프트 전체 조회
+    // 프론프트 전체 조회
     public List<PromptDetailDTO> getAllPrompts() {
         return promptRepository.findAll().stream()
                 .map(prompt -> {
                     double avgRating = prompt.getReviews().stream()
-                            .mapToInt(r -> r.getRating())
+                            .mapToInt(Review::getRating)
                             .average().orElse(0);
 
+                    PromptClassification classification = prompt.getClassification();
+
                     return new PromptDetailDTO(
-                            prompt.getId(),
-                            prompt.getTitle(),
+                            prompt.getPromptId(),
+                            prompt.getName(),
                             prompt.getDescription(),
                             prompt.getContent(),
                             prompt.getPrice(),
-                            prompt.getAuthor().getUsername(),
-                            prompt.getAuthor().getProfile(),
-                            prompt.getCategory().getName(),
+                            prompt.getOwner().getUsername(),
+                            prompt.getOwner().getProfile(),
+                            "", // categoryName 미사용
                             prompt.getTags().stream().map(Tag::getName).toList(),
-                            false, //TODO 위시리스랑 연결필요
+                            false,
                             avgRating,
                             prompt.getReviews().stream()
                                     .map(r -> new ReviewDTO(r.getUser().getUsername(), r.getRating(), r.getContent()))
-                                    .toList()
+                                    .toList(),
+                            classification != null ? classification.getModelCategory().getModelName() : "",
+                            classification != null ? classification.getTypeCategory().getTypeName() : ""
                     );
                 })
                 .toList();
     }
 
-
-    //프롬프트 등록
+    // 프론프트 등록
     @Transactional
     public Long savePrompt(PromptCreateRequestDTO dto) {
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+        System.out.println("📌 modelCategoryId: " + dto.getModelCategoryId());
+        System.out.println("📌 typeCategoryId: " + dto.getTypeCategoryId());
 
-        // TODO: Security 적용 후 인증된 사용자로 대체
-        User author = userRepository.findById(1L)
+        User author = userRepository.findById(1L) // TODO: 인증 사용자로 대체
                 .orElseThrow(() -> new RuntimeException("Author not found"));
 
         Prompt prompt = Prompt.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
+                .name(dto.getTitle())
                 .content(dto.getContent())
                 .price(dto.getPrice())
-                .category(category)
-                .author(author)
+                .aiInspectionRate(dto.getAiInspectionRate())
+                .exampleContentUrl(dto.getExampleContentUrl())
+                .owner(author)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         List<Tag> tagEntities = resolveTags(dto.getTags());
         prompt.setTags(tagEntities);
-
         promptRepository.save(prompt);
-        return prompt.getId();
+
+        PromptClassification classification = PromptClassification.builder()
+                .prompt(prompt)
+                .modelCategory(modelCategoryRepository.findById(dto.getModelCategoryId())
+                        .orElseThrow(() -> new RuntimeException("Model Category not found")))
+                .typeCategory(typeCategoryRepository.findById(dto.getTypeCategoryId())
+                        .orElseThrow(() -> new RuntimeException("Type Category not found")))
+                .build();
+
+        promptClassificationRepository.save(classification);
+        return prompt.getPromptId();
     }
 
-    //태그 이름 목록 → Tag Entity 매핑
     private List<Tag> resolveTags(List<String> tagNames) {
         return tagNames.stream()
                 .map(name -> tagRepository.findByName(name)
@@ -125,32 +131,26 @@ public class PromptService {
                 .collect(Collectors.toList());
     }
 
-    //프롬프트 수정
+    // 프론프트 수정
     @Transactional
     public void updatePrompt(Long id, PromptUpdateRequestDTO dto) {
         Prompt prompt = promptRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prompt not found"));
 
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-
-        List<Tag> tagEntities = resolveTags(dto.getTags());
-
-        prompt.setTitle(dto.getTitle());
-        prompt.setDescription(dto.getDescription());
+        prompt.setName(dto.getTitle());
         prompt.setContent(dto.getContent());
         prompt.setPrice(dto.getPrice());
-        prompt.setCategory(category);
+        prompt.setUpdatedAt(LocalDateTime.now());
+
+        List<Tag> tagEntities = resolveTags(dto.getTags());
         prompt.setTags(tagEntities);
     }
 
-    //프롬프트 삭제
+    // 프론프트 삭제
     @Transactional
     public void deletePrompt(Long id) {
         Prompt prompt = promptRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prompt not found"));
         promptRepository.delete(prompt);
     }
-
-
 }
