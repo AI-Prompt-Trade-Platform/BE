@@ -1,4 +1,4 @@
-package org.example.prumpt_be.dto.response;
+package org.example.prumpt_be.dto.request;
 
 public class PromptPurchaseRequest {
     private Integer promptId;

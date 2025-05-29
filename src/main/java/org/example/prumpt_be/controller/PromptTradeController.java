@@ -1,7 +1,7 @@
 package org.example.prumpt_be.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.dto.response.PromptPurchaseRequest;
+import org.example.prumpt_be.dto.request.PromptPurchaseRequest;
 import org.example.prumpt_be.service.PromptTradeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
