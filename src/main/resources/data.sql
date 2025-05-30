@@ -17,7 +17,7 @@ VALUES
     ('대화형 AI', 'conversational-ai');
 
 -- prompts
-INSERT INTO prompts (prompt_name, prompt_content, price, ai_inspection_rate, owner_id, example_content_url, created_at, updated_at)
+INSERT INTO prompts (prompt_name, prompt_content,  price, ai_inspection_rate, owner_id, example_content_url, created_at, updated_at ,)
 VALUES
     ('명화 스타일 초상화 프롬프트', '당신의 사진을 반 고흐 스타일로 변환합니다.', 1000, 'A', 1, 'https://example.com/example1.jpg', NOW(), NOW()),
     ('비즈니스 회의 요약 프롬프트', '회의 내용을 요약해주는 AI 프롬프트', 1500, 'B', 1, 'https://example.com/example2.txt', NOW(), NOW());

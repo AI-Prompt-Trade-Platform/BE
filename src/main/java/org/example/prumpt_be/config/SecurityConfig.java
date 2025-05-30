@@ -50,6 +50,7 @@ public class SecurityConfig {
                 // URL 권한 설정
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/users/**").permitAll()
                         .requestMatchers(DELETE, "/users/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")

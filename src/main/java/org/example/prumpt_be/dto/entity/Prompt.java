@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "prompts")
+//@Column(name = "type")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -34,4 +35,8 @@ public class Prompt {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private String type;
+
+    private String model;
 }

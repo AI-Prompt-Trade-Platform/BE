@@ -43,8 +43,9 @@ CREATE TABLE prompts (
                          example_content_url VARCHAR(255) COMMENT '예시 콘텐츠 URL',
                          created_at DATETIME NOT NULL COMMENT '생성 시각',
                          updated_at DATETIME COMMENT '수정 시각',
-                         ADD INDEX idx_prompts_owner_id       (owner_id),
-                         ADD INDEX idx_prompts_created_at     (created_at),
+                         model TEXT COMMENT 'AI 모델 정보',
+                         INDEX idx_prompts_owner_id       (owner_id),
+                         INDEX idx_prompts_created_at     (created_at),
                          CONSTRAINT fk_prompts_owner
                              FOREIGN KEY (owner_id) REFERENCES users(user_id)
 ) COMMENT='프롬프트 정보 테이블' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
