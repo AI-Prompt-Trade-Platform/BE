@@ -25,7 +25,7 @@ public interface PromptsRepository extends JpaRepository<Prompts, Long> {
 
     // 프롬프트 수정 (JPQL은 UPDATE 지원, 예시: 이름과 내용만 수정)
     @Modifying
-    @Query("UPDATE Prompts p SET p.prompt_name = :name, p.prompt_content = :content WHERE p.promptID = :id")
+    @Query("UPDATE Prompts p SET p.promptName = :name, p.promptContent = :content WHERE p.promptID = :id")
     int updatePrompt(@Param("id") Integer id, @Param("name") String name, @Param("content") String content);
 
     // 프롬프트 삭제

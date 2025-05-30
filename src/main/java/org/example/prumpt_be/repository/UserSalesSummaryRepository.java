@@ -26,7 +26,7 @@ public interface UserSalesSummaryRepository
           AND u.summaryDate  <= :endDate
     """)
     BigDecimal findTotalRevenueByUserIdAndPeriod(                  //todo: Repo 테스트 (완)
-            @Param("userId")    Integer  userId, //사용자Id 입력
+            @Param("userId")    int  userId, //사용자Id 입력
             @Param("startDate") LocalDate startDate, //조회 기간 시작일
             @Param("endDate")   LocalDate endDate //조회 기간 종료일
     );
@@ -39,7 +39,7 @@ public interface UserSalesSummaryRepository
       AND u.summaryDate  = :yesterday
 """)
     BigDecimal findYesterdayRevenueByUserId(               //todo: Repo 테스트 (완)
-            @Param("userId") Integer userId,
+            @Param("userId") int userId,
             @Param("yesterday") LocalDate yesterday //Service 계층에서 어제날짜를 입력 해줘야함
     );
 
@@ -58,7 +58,7 @@ public interface UserSalesSummaryRepository
          ORDER BY u.summaryDate
     """)
     List<EachDaysProfitDto> findDailyRevenueByUserAndPeriod(               //todo: Repo 테스트 (완)
-            @Param("userId")    Integer  userId,
+            @Param("userId")    int  userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate")   LocalDate endDate
     );

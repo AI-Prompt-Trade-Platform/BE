@@ -53,4 +53,5 @@ public class PromptReviews {
     public void setReviewer(Users reviewer) {
         this.reviewerID = reviewer;
     }
+
 }

@@ -48,7 +48,7 @@ public class TestDataLoader {
         for (int i = 1; i <= 10; i++) {
             Users user = new Users();
 //            user.setUserID(i); //자동증가로 바꿔서 DB가 처리
-            user.setAuth0_id("auth0-user-" + i);
+            user.setAuth0Id("auth0|" + i);
             user.setEmail("user" + i + "@example.com");
             user.setEmailVerified(1);
             user.setPoint(1000);
@@ -71,8 +71,8 @@ public class TestDataLoader {
             for (int i = 1; i <= 5; i++) {
                 Prompts prompt = new Prompts();
                 // promptID는 auto-increment이므로 set하지 않음
-                prompt.setPrompt_name("User" + user.getUserID() + " Prompt " + i);
-                prompt.setPrompt_content("Content for User" + user.getUserID() + "'s Prompt " + i);
+                prompt.setPromptName("User" + user.getUserID() + " Prompt " + i);
+                prompt.setPromptContent("Content for User" + user.getUserID() + "'s Prompt " + i);
                 prompt.setPrice(1000 + i * 100);
                 prompt.setAi_inspection_rate("0.0");
                 prompt.setOwnerID(user);
@@ -138,7 +138,7 @@ public class TestDataLoader {
             UserSalesSummary summary = new UserSalesSummary();
             summary.setUserId(user.getUserID()); // 복합키 필수
             summary.setSummaryDate(randomDate); // 랜덤 날짜 설정
-            summary.setUser(usersRepo.findById(user.getUserID()).orElseThrow());
+            summary.setUser(usersRepo.findById(String.valueOf(user.getUserID())).orElseThrow());
             summary.setSoldCount(soldCount);
             summary.setTotalRevenue(BigDecimal.valueOf(totalRevenue));
             summary.setLastUpdated(now);

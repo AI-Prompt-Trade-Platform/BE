@@ -1,10 +1,5 @@
 package org.example.prumpt_be.service;
 
-import jakarta.transaction.Transactional;
-import org.example.prumpt_be.domain.entity.Prompts;
-import org.example.prumpt_be.domain.entity.Purchases;
-import org.example.prumpt_be.domain.entity.UserSalesSummary;
-import org.example.prumpt_be.domain.entity.Users;
 import org.example.prumpt_be.dto.response.EachDaysProfitDto;
 import org.example.prumpt_be.repository.PromptsRepository;
 import org.example.prumpt_be.repository.PurchasesRepository;
@@ -17,14 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")

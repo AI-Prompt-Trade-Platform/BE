@@ -81,7 +81,7 @@ public class PromptProfitRepsitoryTest {
         int userId = 2;
         LocalDate yesterday = LocalDate.now(ZoneId.of("Asia/Seoul")).minusDays(1);
         BigDecimal yesterdayProfit = userSalesSummaryRepository.findYesterdayRevenueByUserId(userId, yesterday);
-        System.out.printf("사용자: %d | 어제 수익: %s%n", userId ,yesterdayProfit);
+        System.out.printf("사용자: %s | 어제 수익: %s%n", userId ,yesterdayProfit);
     }
 
     @Test
@@ -89,6 +89,6 @@ public class PromptProfitRepsitoryTest {
     void FindAvgFromPromptsTest() {
         int userId = 3;
         Double avgRate = reviewsRepository.findAvgRateOfAllPromptsByUserId(userId);
-        System.out.printf("사용자: %d | 평균별점: %s%n", userId, avgRate);
+        System.out.printf("사용자: %s | 평균별점: %s%n", userId, avgRate);
     }
 }
