@@ -1,7 +1,8 @@
 package org.example.prumpt_be.repository;
 
-import org.example.prumpt_be.domain.entity.UserSalesSummary;
 import org.example.prumpt_be.dto.response.EachDaysProfitDto;
+import org.example.prumpt_be.dto.response.RateAvgDto;
+import org.example.prumpt_be.dto.response.ThisMonthProfitDto;
 import org.example.prumpt_be.test.TestDataLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -88,7 +89,7 @@ public class PromptProfitRepsitoryTest {
     @DisplayName("특정 유저의 프롬프트들 전체 별점 평균 조회")
     void FindAvgFromPromptsTest() {
         int userId = 3;
-        Double avgRate = reviewsRepository.findAvgRateOfAllPromptsByUserId(userId);
+        RateAvgDto avgRate = reviewsRepository.findAvgRateOfAllPromptsByUserId(userId);
         System.out.printf("사용자: %s | 평균별점: %s%n", userId, avgRate);
     }
 }

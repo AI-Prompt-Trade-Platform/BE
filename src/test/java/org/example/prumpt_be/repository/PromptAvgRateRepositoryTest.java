@@ -1,6 +1,7 @@
 package org.example.prumpt_be.repository;
 
 import org.example.prumpt_be.dto.response.PromptAvgRateDto;
+import org.example.prumpt_be.dto.response.RateAvgDto;
 import org.example.prumpt_be.test.TestDataLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,7 +42,7 @@ public class PromptAvgRateRepositoryTest {
     @DisplayName("특정 유저의 프롬프트들 전체 별점 평균 조회")
     void FindUsersAvgRateTest() {
         int userId = 2;
-        Double AvgRate = promptReviewsRepository.findAvgRateOfAllPromptsByUserId(userId);
+        RateAvgDto AvgRate = promptReviewsRepository.findAvgRateOfAllPromptsByUserId(userId);
         System.out.printf("%s번 사용자의 전체평균 별점 : %s%n", userId, AvgRate);
     }
 
