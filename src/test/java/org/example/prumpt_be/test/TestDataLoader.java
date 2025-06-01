@@ -49,8 +49,6 @@ public class TestDataLoader {
             Users user = new Users();
 //            user.setUserID(i); //자동증가로 바꿔서 DB가 처리
             user.setAuth0Id("auth0|" + i);
-            user.setEmail("user" + i + "@example.com");
-            user.setEmailVerified(1);
             user.setPoint(1000);
             user.setProfileName("User " + i);
             user.setIntroduction("This is user " + i);
