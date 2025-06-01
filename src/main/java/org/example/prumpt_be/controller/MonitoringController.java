@@ -1,14 +1,17 @@
 package org.example.prumpt_be.controller;
 
-import org.example.prumpt_be.dto.response.PromptAvgRateDto;
+import org.example.prumpt_be.domain.entity.Prompts;
+import org.example.prumpt_be.dto.response.*;
 import org.example.prumpt_be.repository.PromptReviewsRepository;
 import org.example.prumpt_be.service.MoniteringService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -17,27 +20,41 @@ public class MonitoringController {
     private final PromptReviewsRepository promptReviewsRepository;
     private final MoniteringService moniteringService;
 
+    //생성자
     public MonitoringController(PromptReviewsRepository promptReviewsRepository, MoniteringService moniteringService) {
         this.promptReviewsRepository = promptReviewsRepository;
         this.moniteringService = moniteringService;
     }
 
-    // 인증된 사용자가 볼 수 있는 프롬프트 목록 조회 예시
+    // 인증된 사용자의 수익요약 페이지 조회
     @GetMapping("/prompts")
-    public List<PromptAvgRateDto> listPrompts(
-            @AuthenticationPrincipal Jwt jwt
-    ) {
+    public MoniteringResponseDto listPrompts(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(name = "period", required = false, defaultValue = "MONTH") MoniteringService.PeriodType period) {
 
-        // 1) JWT에서 sub(사용자 ID) 뽑아오기
+        // JWT에서 sub(사용자 ID) 뽑아오기
         String userAuth0Id = jwt.getSubject();
         int userId = moniteringService.getUserIdByAuth0Id(userAuth0Id);
-//        String userAuth0Id = jwt.getSubject();
 
-        // 2) 서비스 호출: 해당 사용자의 평균 별점 조회 (Service계층으로 이동)
-        List<PromptAvgRateDto> eachPromptsRate = moniteringService.getAvgRatesByUser(userId);
+        //1. 판매중인 프롬프트 리스트 조회
+        List<PromptDto> allPrompts = moniteringService.getAllPromptsByOwnerId(userId);
+        //2. 특정 기간(1달,6개월,1년 중 택1) 동안의 일일 수익 조회(FE에서 차트 그리기용)
+        List<EachDaysProfitDto> eachDaysProfits = moniteringService.findDailyRevenueWithZero(userId, period);
+        //3. 유저의 별점 평균 조회
+        RateAvgDto avgRate = moniteringService.getAvgRateOfAllPromptsByUserId(userId);
+        //4. 유저의 이달 총 수입 조회
+        BigDecimal thisMonthProfit = moniteringService.getProfitOfThisMonthByUserId(userId);
+        //5. 총 판매 건수
+        Long totalSalesCount = moniteringService.getTotalSalesCountByUserId(userId);
 
-        // 3) 결과 반환
-        return eachPromptsRate;  // 그대로 반환
+        return new MoniteringResponseDto(
+                allPrompts,                // ① 판매 중인 프롬프트 전체 리스트
+                eachDaysProfits,           // ③ 특정 기간 동안의 일일 수익
+                avgRate,                   // ④ 전체 평균 별점
+                thisMonthProfit,           // ⑤ 이달 총 수익
+                totalSalesCount            // ⑥ 총 판매 수
+        );
 
     }
+
 }

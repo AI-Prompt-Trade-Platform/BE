@@ -3,6 +3,7 @@ package org.example.prumpt_be.repository;
 
 import org.example.prumpt_be.domain.entity.PromptReviews;
 import org.example.prumpt_be.dto.response.PromptAvgRateDto;
+import org.example.prumpt_be.dto.response.RateAvgDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,12 +17,16 @@ public interface PromptReviewsRepository extends JpaRepository<PromptReviews, In
 
 //================================조회=========================================
     //특정 유저의 프롬프트들 전체 별점 평균 조회
-    @Query("""
-    SELECT AVG(pr.rate)
-      FROM PromptReviews pr
-     WHERE pr.promptID.ownerID.userID = :userId
-""")
-    Double findAvgRateOfAllPromptsByUserId(@Param("userId") int userId);          //todo: Repo 테스트 (완)
+@Query("""
+        SELECT new org.example.prumpt_be.dto.response.RateAvgDto(
+            pr.promptID.ownerID.userID,
+            AVG(pr.rate)               
+        )
+          FROM PromptReviews pr
+         WHERE pr.promptID.ownerID.userID = :userId
+         GROUP BY pr.promptID.ownerID.userID
+    """)
+RateAvgDto findAvgRateOfAllPromptsByUserId(@Param("userId") int userId);          //todo: Repo 테스트 (완)
 
 
     //특정 유저의 각 프롬프트별 평균별점 리스트 조회

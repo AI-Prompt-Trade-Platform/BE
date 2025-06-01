@@ -2,6 +2,7 @@ package org.example.prumpt_be.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.example.prumpt_be.domain.entity.Prompts;
+import org.example.prumpt_be.dto.response.PromptDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -32,4 +33,17 @@ public interface PromptsRepository extends JpaRepository<Prompts, Long> {
     @Modifying
     @Query("DELETE FROM Prompts p WHERE p.promptID = :id")
     int deletePromptById(@Param("id") Integer id);
+
+    // 특정 사용자가 판매중인 프롬프트 조회
+    @Query("""
+        SELECT new org.example.prumpt_be.dto.response.PromptDto(
+            p.promptID,
+            p.promptName,
+            p.promptContent,
+            p.price
+        )
+        FROM Prompts p
+        WHERE p.ownerID.userID = :userId
+    """)
+    List<PromptDto> findAllByOwnerId(@Param("userId") Integer userId);
 }
