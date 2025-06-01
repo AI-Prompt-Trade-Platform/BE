@@ -26,10 +26,10 @@ public class CustomJwtAuthenticationConverter
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
         String sub   = jwt.getSubject();
-        String email = jwt.getClaim("email");
+//        String email = jwt.getClaim("email");
 
         usersRepository.findByAuth0Id(sub)
-            .orElseGet(() -> usersRepository.save(new Users(sub, email)));
+            .orElseGet(() -> usersRepository.save(new Users(sub)));
 
         Collection<GrantedAuthority> authorities = scopesConverter.convert(jwt);
         return new JwtAuthenticationToken(jwt, authorities, sub);
