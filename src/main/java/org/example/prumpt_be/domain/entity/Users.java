@@ -16,47 +16,39 @@ import java.time.LocalDateTime;
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userID")
+    @Column(name = "user_id")
     private int userID;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "auth0_id", nullable = false, unique = true)
     private String auth0Id;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private int emailVerified;
 
     @Column(nullable = false,  columnDefinition = "INT DEFAULT 0")
     private int point;
 
-    @Column(nullable = false)
+    @Column(name = "profile_name", nullable = false)
     private String profileName;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "introduction",columnDefinition = "TEXT")
     private String introduction;
 
-    @Column
+    @Column(name = "profile_img_url")
     private String profileImg_url;
 
-    @Column
+    @Column(name = "banner_img_url")
     private String bannerImg_url;
 
-    @Column(nullable = false)
+    @Column(name = "user_role", nullable = false)
     private String user_role;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
 
-    public Users(String sub, String email) {
+    public Users(String sub) {
         this.auth0Id = sub;
-        this.email = email;
-        this.emailVerified = 1; // 기본값: 이메일 인증됨
         this.point = 0; // 기본값: 포인트 0
         this.profileName = "사용자" + sub.substring(0, 5); // 기본 프로필명
         this.introduction = ""; // 기본 소개글
@@ -65,4 +57,5 @@ public class Users {
         this.user_role = "USER"; // 기본 사용자 역할
         this.createdAt = LocalDateTime.now();
     }
+
 }

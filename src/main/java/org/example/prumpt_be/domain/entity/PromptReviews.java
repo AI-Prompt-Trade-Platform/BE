@@ -13,15 +13,16 @@ import java.time.LocalDateTime;
 public class PromptReviews {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "review_id")
     private int reviewID;
     @OneToOne
-    @JoinColumn(name = "purchase_id", referencedColumnName = "purchaseID", nullable = false, unique = true)
+    @JoinColumn(name = "purchase_id", referencedColumnName = "purchase_id", nullable = false, unique = true)
     private Purchases purchaseID;
     @ManyToOne
-    @JoinColumn(name = "prompt_id", referencedColumnName = "promptID", nullable = false)
+    @JoinColumn(name = "prompt_id", referencedColumnName = "prompt_id", nullable = false)
     private Prompts promptID;
     @ManyToOne
-    @JoinColumn(name = "reviewer_id", referencedColumnName = "userID", nullable = false)
+    @JoinColumn(name = "reviewer_id", referencedColumnName = "user_id", nullable = false)
     private Users reviewerID;
     @Column
     private Double rate;

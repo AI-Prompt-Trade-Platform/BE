@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -13,23 +14,26 @@ import java.time.LocalDateTime;
 public class Prompts {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "promptID")
+    @Column(name = "prompt_id")
     private int promptID;
 
     @Column(nullable = false)
-    private String prompt_name;
+    private String promptName;
 
     @Column(columnDefinition = "TEXT")
-    private String prompt_content;
+    private String promptContent;
 
-    @Column
+    @Column(name = "price", nullable = false)
     private int price;
+
+    @OneToMany(mappedBy = "promptID", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PromptReviews> reviews;
 
     @Column
     private String ai_inspection_rate;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id", referencedColumnName = "userID", nullable = false)
+    @JoinColumn(name = "owner_id", referencedColumnName = "user_id", nullable = false)
     private Users ownerID;
 
     @Column

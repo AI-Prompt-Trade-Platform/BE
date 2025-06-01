@@ -13,14 +13,14 @@ import java.time.LocalDateTime;
 public class Purchases {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int purchaseID;
+    private int purchase_id;
 
     @ManyToOne
-    @JoinColumn(name = "buyerID", referencedColumnName = "userID", nullable = false)
+    @JoinColumn(name = "buyer_id", referencedColumnName = "user_id", nullable = false)
     private Users buyer;
 
     @ManyToOne
-    @JoinColumn(name = "promptID", referencedColumnName = "promptID", nullable = false)
+    @JoinColumn(name = "prompt_id", referencedColumnName = "prompt_id", nullable = false)
     private Prompts promptId;
 
     @Column(nullable = false)

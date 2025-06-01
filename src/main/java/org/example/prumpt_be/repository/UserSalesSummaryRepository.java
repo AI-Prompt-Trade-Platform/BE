@@ -2,6 +2,7 @@ package org.example.prumpt_be.repository;
 
 import org.example.prumpt_be.domain.entity.UserSalesSummary;
 import org.example.prumpt_be.dto.response.EachDaysProfitDto;
+import org.example.prumpt_be.dto.response.ThisMonthProfitDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,7 +17,7 @@ import java.util.List;
 public interface UserSalesSummaryRepository
     extends JpaRepository<UserSalesSummary, Integer> {
 
-    //지정된 기간(startDate ~ endDate) 동안의 판매 합계 조회
+    //지정된 기간(startDate ~ endDate) 동안의 판매 금액 조회
     //데이터 없으면 0 반환
     @Query("""
        SELECT COALESCE(SUM(u.totalRevenue), 0)
@@ -63,7 +64,11 @@ public interface UserSalesSummaryRepository
             @Param("endDate")   LocalDate endDate
     );
 
-
-
-
+    //특정 사용자의 총 판매 건수 조회
+    @Query("""
+    SELECT COUNT(p)
+      FROM Purchases p
+     WHERE p.promptId.ownerID.userID = :userId
+""")
+    long countTotalSalesByUserId(@Param("userId") int userId);
 }
