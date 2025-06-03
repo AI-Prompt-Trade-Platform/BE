@@ -22,6 +22,7 @@ public class WishlistService {
     private final PromptRepository promptRepository;
     private final UserRepository userRepository;
 
+    // 유저의 위시리스트 반환
     public List<WishlistPromptResponse> getUserWishlist(Long userId) {
         List<UserWishlist> wishlistItems = wishlistRepository.findByUserId(userId);
 
@@ -42,6 +43,7 @@ public class WishlistService {
             .collect(Collectors.toList());
     }
 
+    // 위시리스트에 프롬프트 추가 todo: 추가/삭제 토글방식으로 수정 필요
     public void addToWishlist(Long userId, Long promptId) {
         if (!wishlistRepository.existsByUserIdAndPromptId(userId, promptId)) {
             wishlistRepository.save(UserWishlist.builder()
@@ -52,6 +54,7 @@ public class WishlistService {
         }
     }
 
+    // 위시리스트에서 프롬프트 제거
     public void removeFromWishlist(Long userId, Long promptId) {
         Optional<UserWishlist> wishlist = wishlistRepository.findByUserIdAndPromptId(userId, promptId);
         wishlist.ifPresent(wishlistRepository::delete);

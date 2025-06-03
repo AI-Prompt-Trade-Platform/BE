@@ -22,16 +22,20 @@ public class UserProfileService {
     private final PromptRepository promptRepository;
     private final PromptPurchaseRepository promptPurchaseRepository;
 
+    //유저 마이페이지 정보 반환
     public UserMypageResponse getUserProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // 판매 중인 프롬프트 리스트
         List<PromptSummary> sellingPrompts = promptRepository.findByOwnerId(userId)
                 .stream().map(this::toPromptSummary).collect(Collectors.toList());
 
+        // 구매한 프롬프트 리스트
         List<PromptSummary> completedPurchases = promptPurchaseRepository.findByBuyerUserIdAndStatus(userId, "COMPLETED")
                 .stream().map(p -> toPromptSummary(p.getPrompt())).collect(Collectors.toList());
 
+        // todo: 판매중??
         List<PromptSummary> ongoingPurchases = promptPurchaseRepository.findByBuyerUserIdAndStatus(userId, "IN_PROGRESS")
                 .stream().map(p -> toPromptSummary(p.getPrompt())).collect(Collectors.toList());
 
@@ -49,6 +53,7 @@ public class UserProfileService {
                 .build();
     }
 
+    //프롬프트 상세화면 정보 반환
     private PromptSummary toPromptSummary(Prompt prompt) {
         return PromptSummary.builder()
                 .promptId(prompt.getPromptId())

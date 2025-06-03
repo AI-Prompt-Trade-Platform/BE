@@ -31,6 +31,7 @@ public class PromptService {
         return toResponse(prompts);
     }
 
+    // 프롬프트 상세화면 정보 반환
     private PromptListResponse toResponse(List<Prompt> prompts) {
         List<PromptSummary> list = prompts.stream()
                 .map(p -> PromptSummary.builder()

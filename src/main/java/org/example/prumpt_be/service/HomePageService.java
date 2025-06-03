@@ -16,26 +16,32 @@ public class HomePageService {
     private final PromptRepository promptRepository;
     private final UserRepository userRepository;
 
+    // 인기 프롬프트 목록 반환
     public List<Prompt> getPopularPrompts() {
         return promptRepository.findTop10ByOrderByPriceDesc();
     }
 
+    // 최신 프롬프트 목록 반환
     public List<Prompt> getLatestPrompts() {
         return promptRepository.findTop10ByOrderByCreatedAtDesc();
     }
 
+    // 카테고리별 프롬프트 목록 반환 (모델 기준)
     public List<Prompt> getPromptsByModel(String model) {
         return promptRepository.findByModel(model);
     }
 
+    // 카테고리별 프롬프트 목록 반환 (종류 기준)
     public List<Prompt> getPromptsByType(String type) {
         return promptRepository.findByType(type);
     }
 
+    // 인기 크리에이터 목록 반환
     public List<User> getPopularCreators() {
         return userRepository.findTop5ByOrderByPointDesc();
     }
 
+    // 프롬프트 검색
     public List<Prompt> searchPrompts(String keyword) {
         return promptRepository.findByPromptNameContaining(keyword);
     }

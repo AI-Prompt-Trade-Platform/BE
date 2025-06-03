@@ -23,6 +23,6 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
         // 프롬프트 검색
         List<Prompt> findByPromptNameContaining(String keyword);
 
-
+        // 프롬프트 검색 (대소문자 구분 없이)
         List<Prompt> findByPromptNameContainingIgnoreCase(String keyword);
 }
