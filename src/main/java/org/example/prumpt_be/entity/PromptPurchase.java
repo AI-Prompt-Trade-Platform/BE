@@ -1,7 +1,6 @@
 package org.example.prumpt_be.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -9,7 +8,13 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "prompt_purchases")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(
+        name = "prompt_purchases",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"buyer_id", "prompt_id"})
+)
 public class PromptPurchase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
