@@ -9,28 +9,45 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+// import java.util.List; // findByOwnerOrderByCreatedAtDesc 가 Page를 반환하므로 List는 필요 없을 수 있습니다.
 
+/**
+ * Prompt 엔티티에 대한 데이터 접근을 처리하는 JpaRepository 인터페이스입니다.
+ * 프롬프트의 기본적인 CRUD 연산 외에 다양한 조건의 프롬프트 조회를 담당합니다.
+ */
 @Repository
 public interface PromptRepository extends JpaRepository<Prompt, Long> {
 
-    // 최근 등록된 프롬프트 ( 홈 화면 )
-    Page<Prompt> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    // 최근 등록된 프롬프트 (홈 화면) -> Pageable에 정렬 정보가 있으므로 findAll로 대체 가능
+    // Page<Prompt> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    // 특정 사용자가 소유한 프롬프트 목록 ( 마이페이지 - 판매중인 프롬프트 )
+    // 특정 사용자가 소유한 프롬프트 목록 (마이페이지 - 판매중인 프롬프트)
     Page<Prompt> findByOwnerOrderByCreatedAtDesc(User owner, Pageable pageable);
 
-    // 프롬프트 이름 또는 내용으로 검색 ( 홈 화면 - 검색창 )
-    @Query("SELECT p FROM Prompt p WHERE p.promptName LIKE %:keyword% OR p.promptContent LIKE %:keyword% ORDER BY p.createdAt DESC")
+    // 프롬프트 이름 또는 내용으로 검색 (홈 화면 - 검색창)
+    @Query("SELECT p FROM Prompt p WHERE p.promptName LIKE %:keyword% OR p.promptContent LIKE %:keyword%")
     Page<Prompt> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
-    // TODO: 인기 프롬프트 조회 (정의 필요 - 예: 판매량, 조회수, 위시리스트 추가 수 등)
-    // 예시: 판매량을 기준으로 (PromptPurchase 테이블과 조인 필요)
-    // @Query("SELECT p FROM Prompt p JOIN p.purchases pur GROUP BY p.promptId ORDER BY COUNT(pur.purchaseId) DESC")
-    // Page<Prompt> findPopularPrompts(Pageable pageable);
-    // 지금은 우선 최근 등록 프롬프트를 인기 프롬프트로 대체하거나, 다른 단순 기준으로 정렬할 수 있습니다.
-    // 예를 들어 AI 검수 등급(aiInspectionRate) 같은 필드가 있다면 그걸로 정렬할 수도 있습니다.
-    // 여기서는 예시로 createdAt으로 정렬하고, 서비스단에서 이부분을 명확히 인지하고 사용하겠습니다.
-    Page<Prompt> findAllByOrderByPriceDesc(Pageable pageable); // 가격 높은 순 (임시 인기 기준)
+    // (임시 인기 기준) 가격 높은 순 -> Pageable에 정렬 정보가 있으므로 findAll로 대체 가능
+    // Page<Prompt> findAllByOrderByPriceDesc(Pageable pageable);
 
+
+    /**
+     * 모델 카테고리 슬러그 및/또는 타입 카테고리 슬러그로 프롬프트를 필터링하여 조회합니다.
+     * 두 슬러그 모두 null이거나 비어있으면 필터링 없이 모든 프롬프트를 반환합니다 (Pageable의 정렬은 적용됨).
+     *
+     * @param modelCategorySlug 필터링할 모델 카테고리 슬러그 (선택 사항)
+     * @param typeCategorySlug 필터링할 타입 카테고리 슬러그 (선택 사항)
+     * @param pageable 페이지네이션 및 정렬 정보
+     * @return 필터링된 프롬프트 목록 (페이지네이션 적용)
+     */
+    @Query("SELECT DISTINCT p FROM Prompt p LEFT JOIN p.classifications pc " +
+           "LEFT JOIN pc.modelCategory mc LEFT JOIN pc.typeCategory tc " +
+           "WHERE (:modelCategorySlug IS NULL OR mc.modelSlug = :modelCategorySlug) " +
+           "AND (:typeCategorySlug IS NULL OR tc.typeSlug = :typeCategorySlug)")
+    Page<Prompt> findPromptsByCategories(
+            @Param("modelCategorySlug") String modelCategorySlug,
+            @Param("typeCategorySlug") String typeCategorySlug,
+            Pageable pageable
+    );
 }
