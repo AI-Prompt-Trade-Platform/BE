@@ -44,4 +44,5 @@ public class Prompts {
 
     @Column
     private LocalDateTime updatedAt;
+
 }

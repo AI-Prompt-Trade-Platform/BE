@@ -21,9 +21,6 @@ public interface PromptsRepository extends JpaRepository<Prompts, Long> {
     @Query("SELECT p FROM Prompts p WHERE p.promptID = :id")
     Prompts findPromptById(@Param("id") Integer id);
 
-    // 프롬프트 생성 (JPQL은 INSERT 지원하지 않으므로, save() 사용)
-    Prompts save(Prompts prompt);
-
     // 프롬프트 수정 (JPQL은 UPDATE 지원, 예시: 이름과 내용만 수정)
     @Modifying
     @Query("UPDATE Prompts p SET p.promptName = :name, p.promptContent = :content WHERE p.promptID = :id")
