@@ -1,10 +1,23 @@
 package org.example.prumpt_be.repository;
 
+import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.entity.PromptPurchase;
+import org.example.prumpt_be.dto.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface PromptPurchaseRepository extends JpaRepository<PromptPurchase, Long> {
-    List<PromptPurchase> findByBuyerUserIdAndStatus(Long userId, String status);
+    // 특정 사용자가 구매한 프롬프트 목록 ( 마이페이지 - 구매한 프롬프트 )
+    Page<PromptPurchase> findByBuyerOrderByPurchasedAtDesc(User buyer, Pageable pageable);
+
+    // 특정 프롬프트를 특정 사용자가 구매했는지 확인
+    boolean existsByBuyerAndPrompt(User buyer, Prompt prompt);
+
+    // 특정 프롬프트의 구매 내역 (판매자 입장에서 볼 수 있음)
+    List<PromptPurchase> findByPromptOrderByPurchasedAtDesc(Prompt prompt);
 }

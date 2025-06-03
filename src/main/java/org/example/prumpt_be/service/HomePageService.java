@@ -1,48 +1,35 @@
 package org.example.prumpt_be.service;
 
-import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.dto.entity.Prompt;
-import org.example.prumpt_be.dto.entity.User;
-import org.example.prumpt_be.repository.PromptRepository;
-import org.example.prumpt_be.repository.UserRepository;
-import org.springframework.stereotype.Service;
+import org.example.prumpt_be.dto.response.PageResponseDto;
+import org.example.prumpt_be.dto.response.PromptSummaryDto;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+/**
+ * 홈 화면에 필요한 데이터 조회 관련 비즈니스 로직을 처리하는 서비스 인터페이스입니다.
+ * 인기 프롬프트, 최신 프롬프트, 프롬프트 검색 기능을 제공합니다.
+ */
+public interface HomePageService {
 
-@Service
-@RequiredArgsConstructor
-public class HomePageService {
+    /**
+     * 인기있는 프롬프트 목록을 페이지네이션하여 조회합니다.
+     * (현재는 임시로 가격 높은 순으로 조회합니다. 실제 인기 로직은 구체화 필요)
+     * @param pageable 페이지네이션 정보 (컨트롤러에서 전달받음)
+     * @return 페이징된 인기 프롬프트 목록
+     */
+    PageResponseDto<PromptSummaryDto> getPopularPrompts(Pageable pageable);
 
-    private final PromptRepository promptRepository;
-    private final UserRepository userRepository;
+    /**
+     * 최근 등록된 프롬프트 목록을 페이지네이션하여 조회합니다.
+     * @param pageable 페이지네이션 정보 (컨트롤러에서 전달받음)
+     * @return 페이징된 최신 프롬프트 목록
+     */
+    PageResponseDto<PromptSummaryDto> getRecentPrompts(Pageable pageable);
 
-    // 인기 프롬프트 목록 반환
-    public List<Prompt> getPopularPrompts() {
-        return promptRepository.findTop10ByOrderByPriceDesc();
-    }
-
-    // 최신 프롬프트 목록 반환
-    public List<Prompt> getLatestPrompts() {
-        return promptRepository.findTop10ByOrderByCreatedAtDesc();
-    }
-
-    // 카테고리별 프롬프트 목록 반환 (모델 기준)
-    public List<Prompt> getPromptsByModel(String model) {
-        return promptRepository.findByModel(model);
-    }
-
-    // 카테고리별 프롬프트 목록 반환 (종류 기준)
-    public List<Prompt> getPromptsByType(String type) {
-        return promptRepository.findByType(type);
-    }
-
-    // 인기 크리에이터 목록 반환
-    public List<User> getPopularCreators() {
-        return userRepository.findTop5ByOrderByPointDesc();
-    }
-
-    // 프롬프트 검색
-    public List<Prompt> searchPrompts(String keyword) {
-        return promptRepository.findByPromptNameContaining(keyword);
-    }
+    /**
+     * 키워드로 프롬프트를 검색하여 페이지네이션된 결과를 반환합니다.
+     * @param keyword 검색어
+     * @param pageable 페이지네이션 정보 (컨트롤러에서 전달받음)
+     * @return 페이징된 검색 결과 프롬프트 목록
+     */
+    PageResponseDto<PromptSummaryDto> searchPrompts(String keyword, Pageable pageable);
 }

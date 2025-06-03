@@ -1,63 +1,51 @@
 package org.example.prumpt_be.service;
 
-import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.dto.response.WishlistPromptResponse;
-import org.example.prumpt_be.dto.entity.Prompt;
-import org.example.prumpt_be.dto.entity.User;
-import org.example.prumpt_be.dto.entity.UserWishlist;
-import org.example.prumpt_be.repository.PromptRepository;
-import org.example.prumpt_be.repository.UserRepository;
-import org.example.prumpt_be.repository.WishlistRepository;
-import org.springframework.stereotype.Service;
+import org.example.prumpt_be.dto.response.PageResponseDto;
+import org.example.prumpt_be.dto.response.PromptSummaryDto; // 홈 화면 등에서 사용하는 DTO 재활용 가능
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+/**
+ * 사용자 위시리스트 관련 비즈니스 로직을 처리하는 서비스 인터페이스입니다.
+ * 위시리스트에 프롬프트를 추가, 삭제하고 사용자의 위시리스트를 조회하는 기능을 제공합니다.
+ */
+public interface WishlistService {
 
-@Service
-@RequiredArgsConstructor
-public class WishlistService {
-    private final WishlistRepository wishlistRepository;
-    private final PromptRepository promptRepository;
-    private final UserRepository userRepository;
+    /**
+     * 현재 인증된 사용자의 위시리스트에 특정 프롬프트를 추가합니다.
+     * 이미 위시리스트에 있는 프롬프트는 중복 추가하지 않습니다.
+     *
+     * @param auth0Id 현재 인증된 사용자의 Auth0 ID
+     * @param promptId 위시리스트에 추가할 프롬프트의 ID
+     * @throws RuntimeException 사용자를 찾을 수 없거나 프롬프트를 찾을 수 없는 경우 발생 (적절한 예외로 변경 권장)
+     */
+    void addPromptToWishlist(String auth0Id, Long promptId);
 
-    // 유저의 위시리스트 반환
-    public List<WishlistPromptResponse> getUserWishlist(Long userId) {
-        List<UserWishlist> wishlistItems = wishlistRepository.findByUserId(userId);
+    /**
+     * 현재 인증된 사용자의 위시리스트에서 특정 프롬프트를 제거합니다.
+     *
+     * @param auth0Id 현재 인증된 사용자의 Auth0 ID
+     * @param promptId 위시리스트에서 제거할 프롬프트의 ID
+     * @throws RuntimeException 사용자를 찾을 수 없거나, 프롬프트를 찾을 수 없거나, 위시리스트에 해당 항목이 없는 경우 발생 (적절한 예외로 변경 권장)
+     */
+    void removePromptFromWishlist(String auth0Id, Long promptId);
 
-        return wishlistItems.stream()
-            .map(item -> {
-                Prompt prompt = promptRepository.findById(item.getPromptId())
-                    .orElseThrow(() -> new IllegalArgumentException("프롬프트 없음"));
-                User owner = userRepository.findById(prompt.getOwnerId())
-                    .orElseThrow(() -> new IllegalArgumentException("소유자 없음"));
-                return WishlistPromptResponse.builder()
-                    .promptId(prompt.getPromptId())
-                    .promptName(prompt.getPromptName())
-                    .price(prompt.getPrice())
-                    .exampleContentUrl(prompt.getExampleContentUrl())
-                    .ownerName(owner.getProfileName())
-                    .build();
-            })
-            .collect(Collectors.toList());
-    }
+    /**
+     * 현재 인증된 사용자의 위시리스트 목록을 페이지네이션하여 조회합니다.
+     *
+     * @param auth0Id 현재 인증된 사용자의 Auth0 ID
+     * @param pageable 페이지네이션 정보 (정렬 기준: addedAt DESC)
+     * @return 페이징된 위시리스트 프롬프트 목록 (PromptSummaryDto 사용)
+     * @throws RuntimeException 사용자를 찾을 수 없는 경우 발생 (적절한 예외로 변경 권장)
+     */
+    PageResponseDto<PromptSummaryDto> getUserWishlist(String auth0Id, Pageable pageable);
 
-    // 위시리스트에 프롬프트 추가 todo: 추가/삭제 토글방식으로 수정 필요
-    public void addToWishlist(Long userId, Long promptId) {
-        if (!wishlistRepository.existsByUserIdAndPromptId(userId, promptId)) {
-            wishlistRepository.save(UserWishlist.builder()
-                .userId(userId)
-                .promptId(promptId)
-                .addedAt(LocalDateTime.now())
-                .build());
-        }
-    }
-
-    // 위시리스트에서 프롬프트 제거
-    public void removeFromWishlist(Long userId, Long promptId) {
-        Optional<UserWishlist> wishlist = wishlistRepository.findByUserIdAndPromptId(userId, promptId);
-        wishlist.ifPresent(wishlistRepository::delete);
-    }
-
+    /**
+     * 현재 인증된 사용자의 위시리스트에 특정 프롬프트가 있는지 확인합니다.
+     *
+     * @param auth0Id 현재 인증된 사용자의 Auth0 ID
+     * @param promptId 확인할 프롬프트의 ID
+     * @return 위시리스트에 해당 프롬프트가 있으면 true, 없으면 false
+     * @throws RuntimeException 사용자를 찾을 수 없거나 프롬프트를 찾을 수 없는 경우 발생 (적절한 예외로 변경 권장)
+     */
+    boolean isPromptInWishlist(String auth0Id, Long promptId);
 }

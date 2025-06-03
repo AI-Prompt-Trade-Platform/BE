@@ -1,66 +1,32 @@
 package org.example.prumpt_be.service;
 
-import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.dto.entity.Prompt;
-import org.example.prumpt_be.dto.entity.PromptPurchase;
-import org.example.prumpt_be.dto.entity.User;
-import org.example.prumpt_be.dto.response.UserMypageResponse;
-import org.example.prumpt_be.dto.response.PromptSummary;
-import org.example.prumpt_be.repository.PromptPurchaseRepository;
-import org.example.prumpt_be.repository.PromptRepository;
-import org.example.prumpt_be.repository.UserRepository;
-import org.springframework.stereotype.Service;
+import org.example.prumpt_be.dto.request.UserProfileUpdateDto;
+import org.example.prumpt_be.dto.response.UserProfileDto;
 
-import java.util.List;
-import java.util.stream.Collectors;
+/**
+ * 사용자 프로필 정보 조회 및 수정 관련 비즈니스 로직을 처리하는 서비스 인터페이스입니다.
+ */
+public interface UserProfileService {
 
-@Service
-@RequiredArgsConstructor
-public class UserProfileService {
+    /**
+     * 특정 사용자의 프로필 정보를 조회합니다.
+     * @param userId 조회할 사용자 ID
+     * @return 사용자 프로필 정보 DTO
+     */
+    UserProfileDto getUserProfile(Long userId);
 
-    private final UserRepository userRepository;
-    private final PromptRepository promptRepository;
-    private final PromptPurchaseRepository promptPurchaseRepository;
+    /**
+     * 현재 인증된 사용자의 프로필 정보를 조회합니다.
+     * @param auth0Id 현재 인증된 사용자의 Auth0 ID
+     * @return 사용자 프로필 정보 DTO
+     */
+    UserProfileDto getCurrentUserProfile(String auth0Id); // 인증 정보에서 사용자 식별
 
-    //유저 마이페이지 정보 반환
-    public UserMypageResponse getUserProfile(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // 판매 중인 프롬프트 리스트
-        List<PromptSummary> sellingPrompts = promptRepository.findByOwnerId(userId)
-                .stream().map(this::toPromptSummary).collect(Collectors.toList());
-
-        // 구매한 프롬프트 리스트
-        List<PromptSummary> completedPurchases = promptPurchaseRepository.findByBuyerUserIdAndStatus(userId, "COMPLETED")
-                .stream().map(p -> toPromptSummary(p.getPrompt())).collect(Collectors.toList());
-
-        // todo: 판매중??
-        List<PromptSummary> ongoingPurchases = promptPurchaseRepository.findByBuyerUserIdAndStatus(userId, "IN_PROGRESS")
-                .stream().map(p -> toPromptSummary(p.getPrompt())).collect(Collectors.toList());
-
-        return UserMypageResponse.builder()
-                .userId(user.getUserId())
-                .profileName(user.getProfileName())
-                .profileImgUrl(user.getProfileImgUrl())
-                .bannerImgUrl(user.getBannerImgUrl())
-                .introduction(user.getIntroduction())
-                .userRole(user.getUserRole())
-                .point(user.getPoint())
-                .sellingPrompts(sellingPrompts)
-                .completedPurchases(completedPurchases)
-                .ongoingPurchases(ongoingPurchases)
-                .build();
-    }
-
-    //프롬프트 상세화면 정보 반환
-    private PromptSummary toPromptSummary(Prompt prompt) {
-        return PromptSummary.builder()
-                .promptId(prompt.getPromptId())
-                .promptName(prompt.getPromptName())
-                .price(prompt.getPrice())
-                .aiInspectionRate(prompt.getAiInspectionRate())
-                .exampleContentUrl(prompt.getExampleContentUrl())
-                .build();
-    }
+    /**
+     * 현재 인증된 사용자의 프로필 정보를 수정합니다.
+     * @param auth0Id 현재 인증된 사용자의 Auth0 ID
+     * @param userProfileUpdateDto 수정할 프로필 정보
+     * @return 수정된 사용자 프로필 정보 DTO
+     */
+    UserProfileDto updateCurrentUserProfile(String auth0Id, UserProfileUpdateDto userProfileUpdateDto);
 }
