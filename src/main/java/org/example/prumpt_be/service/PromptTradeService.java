@@ -31,6 +31,7 @@ public class PromptTradeService {
             throw new RuntimeException("자기 자신의 프롬프트는 구매할 수 없습니다");
         }
 
+        // 구매한 프롬프트 확인 todo: FE에서 구매버튼 비활성화 처리 필요
         if (purchaseRepository.existsByBuyerIdAndPromptId(buyerId, promptId)) {
             throw new RuntimeException("이미 구매한 프롬프트입니다");
         }
@@ -43,7 +44,7 @@ public class PromptTradeService {
             throw new RuntimeException("포인트가 부족합니다");
         }
 
-        // 포인트 거래
+        // 포인트 거래 todo: 보안 더 확실하게 처리 (단순 save()보다 DB 트랜잭션을 사용해서 동시성 문제 방지)
         buyer.setPoint(buyer.getPoint() - price);
         seller.setPoint(seller.getPoint() + price);
         userRepository.save(buyer);
