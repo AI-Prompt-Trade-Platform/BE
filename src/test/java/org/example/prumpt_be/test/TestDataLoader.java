@@ -1,6 +1,6 @@
 package org.example.prumpt_be.test;
 
-import org.example.prumpt_be.domain.entity.*;
+import org.example.prumpt_be.dto.entity.*;
 import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,8 +1,7 @@
 package org.example.prumpt_be.controller;
 
-import org.example.prumpt_be.domain.entity.Prompts;
+import io.swagger.v3.oas.annotations.Operation;
 import org.example.prumpt_be.dto.response.*;
-import org.example.prumpt_be.repository.PromptReviewsRepository;
 import org.example.prumpt_be.service.MoniteringService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,22 +16,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/monitoring")
 public class MonitoringController {
-    private final PromptReviewsRepository promptReviewsRepository;
     private final MoniteringService moniteringService;
 
     //생성자
-    public MonitoringController(PromptReviewsRepository promptReviewsRepository, MoniteringService moniteringService) {
-        this.promptReviewsRepository = promptReviewsRepository;
+    public MonitoringController( MoniteringService moniteringService) {
         this.moniteringService = moniteringService;
     }
 
     // 인증된 사용자의 수익요약 페이지 조회
+    @Operation(summary = "유저의 거래요약 페이지", description = "유저의 토큰을 받아 거래요약 페이지를 조회합니다.")
     @GetMapping("/prompts")
     public MoniteringResponseDto listPrompts(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(name = "period", required = false, defaultValue = "MONTH") MoniteringService.PeriodType period) {
 
-        // JWT에서 sub(사용자 ID) 뽑아오기
+        // JWT로 유저 ID 조회
         String userAuth0Id = jwt.getSubject();
         int userId = moniteringService.getUserIdByAuth0Id(userAuth0Id);
 

@@ -1,7 +1,6 @@
 package org.example.prumpt_be.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.domain.entity.Prompts;
 import org.example.prumpt_be.dto.response.*;
 import org.example.prumpt_be.repository.PromptReviewsRepository;
 import org.example.prumpt_be.repository.PromptsRepository;
@@ -44,7 +43,6 @@ public class MoniteringService {
             case MONTH -> end.minusMonths(1).plusDays(1);
             case HALF_YEAR -> end.minusMonths(6).plusDays(1);
             case YEAR -> end.minusYears(1).plusDays(1);
-            default -> throw new IllegalArgumentException("지원하지 않는 기간 범위입니다.");
         };
 
         // DB에서 해당 기간 동안의 일일 수익 조회

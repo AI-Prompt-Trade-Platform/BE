@@ -1,7 +1,7 @@
 package org.example.prumpt_be.repository;
 
 
-import org.example.prumpt_be.domain.entity.PromptReviews;
+import org.example.prumpt_be.dto.entity.PromptReviews;
 import org.example.prumpt_be.dto.response.PromptAvgRateDto;
 import org.example.prumpt_be.dto.response.RateAvgDto;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +20,7 @@ public interface PromptReviewsRepository extends JpaRepository<PromptReviews, In
 @Query("""
         SELECT new org.example.prumpt_be.dto.response.RateAvgDto(
             pr.promptID.ownerID.userID,
-            AVG(pr.rate)               
+            AVG(pr.rate)
         )
           FROM PromptReviews pr
          WHERE pr.promptID.ownerID.userID = :userId

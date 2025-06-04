@@ -2,8 +2,8 @@ package org.example.prumpt_be.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.domain.entity.UserSalesSummary;
-import org.example.prumpt_be.domain.entity.Users;
+import org.example.prumpt_be.dto.entity.UserSalesSummary;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.repository.PurchasesRepository;
 import org.example.prumpt_be.repository.UserSalesSummaryRepository;
 import org.example.prumpt_be.repository.UsersRepository;

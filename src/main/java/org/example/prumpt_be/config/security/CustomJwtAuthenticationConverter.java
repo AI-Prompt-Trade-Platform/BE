@@ -1,6 +1,6 @@
 package org.example.prumpt_be.config.security;
 
-import org.example.prumpt_be.domain.entity.Users;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.repository.UsersRepository;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;

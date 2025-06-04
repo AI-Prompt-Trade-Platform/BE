@@ -1,6 +1,6 @@
 package org.example.prumpt_be.repository;
 
-import org.example.prumpt_be.domain.entity.Purchases;
+import org.example.prumpt_be.dto.entity.Purchases;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

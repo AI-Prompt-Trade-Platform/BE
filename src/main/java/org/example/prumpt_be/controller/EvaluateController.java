@@ -1,29 +1,23 @@
 package org.example.prumpt_be.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
 import org.example.prumpt_be.service.AInspectionService;
-import org.example.prumpt_be.service.OpenAiService;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
-
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/chat")
-public class ChatController {
-
-    private final OpenAiService openAiService;
+@RequestMapping("/api/evaluate")
+public class EvaluateController {
     private final AInspectionService aInspectionService;
 
     // 프롬프트 평가 API
+    @Operation(summary = "AI에 프롬프트 평가 요청", description = "ID와 프롬프트 내용, 타입을 입력받아 AI에 평가를 요청합니다.")
     @PostMapping("/prompts/upload")
     public void uploadPrompt(
-            @RequestBody PromptUploadRequestDto request //평가에 필요한 정보 파라미터로 입력
+            @RequestBody PromptUploadRequestDto request
     ) {
         aInspectionService.handlePromptUploadAndEvaluation(request);
     }
-
-
 }

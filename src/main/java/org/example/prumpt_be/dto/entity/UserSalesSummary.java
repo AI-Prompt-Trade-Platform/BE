@@ -1,4 +1,4 @@
-package org.example.prumpt_be.domain.entity;
+package org.example.prumpt_be.dto.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

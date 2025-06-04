@@ -1,8 +1,7 @@
 package org.example.prumpt_be.repository;
 
-import org.example.prumpt_be.domain.entity.UserSalesSummary;
+import org.example.prumpt_be.dto.entity.UserSalesSummary;
 import org.example.prumpt_be.dto.response.EachDaysProfitDto;
-import org.example.prumpt_be.dto.response.ThisMonthProfitDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 
 @Repository

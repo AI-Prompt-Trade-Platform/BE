@@ -1,7 +1,6 @@
 package org.example.prumpt_be.repository;
 
-import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.domain.entity.Prompts;
+import org.example.prumpt_be.dto.entity.Prompts;
 import org.example.prumpt_be.dto.response.PromptDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

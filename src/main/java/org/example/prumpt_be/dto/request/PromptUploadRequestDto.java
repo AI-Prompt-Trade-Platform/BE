@@ -3,7 +3,7 @@ package org.example.prumpt_be.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.example.prumpt_be.domain.entity.Prompts;
+import org.example.prumpt_be.dto.entity.Prompts;
 
 // 평가 요청 DTO
 @Getter

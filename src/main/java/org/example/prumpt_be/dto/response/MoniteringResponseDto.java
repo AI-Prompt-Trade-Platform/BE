@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.prumpt_be.domain.entity.Prompts;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

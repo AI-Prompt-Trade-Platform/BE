@@ -1,5 +1,5 @@
 // src/main/java/org/example/prumpt_be/domain/entity/UserSalesSummaryId.java
-package org.example.prumpt_be.domain.entity;
+package org.example.prumpt_be.dto.entity;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -9,8 +9,6 @@ import java.util.Objects;
 public class UserSalesSummaryId implements Serializable {
     private Integer userId;
     private LocalDate summaryDate;
-
-    public UserSalesSummaryId() {}
 
     public UserSalesSummaryId(Integer userId, LocalDate summaryDate) {
         this.userId = userId;

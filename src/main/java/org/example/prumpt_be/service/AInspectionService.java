@@ -1,6 +1,6 @@
 package org.example.prumpt_be.service;
 
-import org.example.prumpt_be.domain.entity.Prompts;
+import org.example.prumpt_be.dto.entity.Prompts;
 import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
 import org.example.prumpt_be.repository.PromptsRepository;
 import org.springframework.stereotype.Service;
@@ -42,16 +42,12 @@ public class AInspectionService {
 
     // 프롬프트 만드는 함수
     private String makePromptForStock(PromptUploadRequestDto prompt) {
-        switch (prompt.getExampleType()) {
-            case TEXT:
-                return makePromptForText(prompt);
-            case IMAGE:
-                return makePromptForImage(prompt);
-            case VIDEO:
-                return makePromptForVideo(prompt);
-            default:
-                throw new IllegalArgumentException("지원하지 않는 ExampleType입니다: " + prompt.getExampleType());
-        }
+        return switch (prompt.getExampleType()) {
+            case TEXT -> makePromptForText(prompt);
+            case IMAGE -> makePromptForImage(prompt);
+            case VIDEO -> makePromptForVideo(prompt);
+            default -> throw new IllegalArgumentException("지원하지 않는 ExampleType입니다: " + prompt.getExampleType());
+        };
     }
 
     // 텍스트용 프롬프트
