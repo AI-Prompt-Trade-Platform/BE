@@ -12,7 +12,7 @@ public class AInspectionService {
     private final OpenAiService openAiService;
     private final PromptsRepository promptsRepository;
 
-    public AInspectionService(S3Uploader s3Uploader, OpenAiService openAiService, PromptsRepository promptsRepository) {
+    public AInspectionService(S3Uploader s3Uploader , OpenAiService openAiService, PromptsRepository promptsRepository) {
         this.s3Uploader = s3Uploader;
         this.openAiService = openAiService;
         this.promptsRepository = promptsRepository;
