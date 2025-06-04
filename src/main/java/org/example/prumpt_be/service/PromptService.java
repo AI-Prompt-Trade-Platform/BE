@@ -151,7 +151,7 @@ public class PromptService {
     // 프론프트 삭제
     @Transactional
     public void deletePrompt(Long id) {
-        Prompt prompt = promptRepository.findById(id)
+        Prompt prompt = promptRepository.findById(id) //todo: 유저ID 입력받아서 본인것인지 검증하는 메커니즘 필요
                 .orElseThrow(() -> new RuntimeException("Prompt not found"));
         promptRepository.delete(prompt);
     }
