@@ -42,10 +42,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF 비활성화 (API 서버라면)
                 .csrf(csrf -> csrf.disable())
-
-                // URL 권한 설정
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/**").permitAll()
@@ -53,12 +50,9 @@ public class SecurityConfig {
                         .requestMatchers("/success", "/fail").permitAll()
                         .anyRequest().authenticated()
                 )
-
-                // OAuth2 Resource Server 로 JWT 인증
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults())
-                );
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
 
         return http.build();
     }
+
 }
