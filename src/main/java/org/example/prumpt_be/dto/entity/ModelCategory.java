@@ -1,4 +1,4 @@
-package org.example.prumpt_be.entity;
+package org.example.prumpt_be.dto.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,14 +11,14 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "type_categories")
-public class TypeCategory {
+@Table(name = "model_categories")
+public class ModelCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long typeId;
+    private Long modelId;
 
-    private String typeName;
+    private String modelName;
 
-    private String typeSlug;
+    private String modelSlug;
 }

@@ -1,7 +1,7 @@
 package org.example.prumpt_be.service;
 
 import org.example.prumpt_be.dto.request.PromptReviewRequestDTO;
-import org.example.prumpt_be.entity.PromptReview;
+import org.example.prumpt_be.dto.entity.PromptReview;
 
 import java.util.List;
 

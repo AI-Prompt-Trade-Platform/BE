@@ -2,7 +2,7 @@ package org.example.prumpt_be.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.prumpt_be.dto.request.PromptReviewRequestDTO;
-import org.example.prumpt_be.entity.PromptReview;
+import org.example.prumpt_be.dto.entity.PromptReview;
 import org.example.prumpt_be.service.PromptReviewService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

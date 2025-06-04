@@ -2,7 +2,7 @@ package org.example.prumpt_be.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.prumpt_be.dto.request.PromptReviewRequestDTO;
-import org.example.prumpt_be.entity.PromptReview;
+import org.example.prumpt_be.dto.entity.PromptReview;
 import org.example.prumpt_be.repository.PromptRepository;
 import org.example.prumpt_be.repository.PromptReviewRepository;
 import org.example.prumpt_be.repository.UserRepository;
