@@ -22,13 +22,15 @@ public class PromptReviewController {
         return ResponseEntity.ok().build();
     }
 
+    // 프롬프트 리뷰 조회
     @GetMapping("/{promptId}")
     public ResponseEntity<List<PromptReview>> getReviews(@PathVariable Long promptId) {
         return ResponseEntity.ok(reviewService.getReviewsByPromptId(promptId));
     }
 
+    // 프롬프트 리뷰 수정
     @PutMapping("/{reviewId}")
-    public ResponseEntity<Void> updateReview(
+    public ResponseEntity<Void> updateReview( //todo: 유저 ID 검증 메커니즘 필요
             @PathVariable Long reviewId,
             @RequestBody PromptReviewRequestDTO request
     ) {
@@ -36,8 +38,9 @@ public class PromptReviewController {
         return ResponseEntity.ok().build();
     }
 
+    // 프롬프트 리뷰 삭제
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) {
+    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) { //todo: 유저 ID 검증 메커니즘 필요
         reviewService.deleteReview(reviewId);
         return ResponseEntity.noContent().build();
     }

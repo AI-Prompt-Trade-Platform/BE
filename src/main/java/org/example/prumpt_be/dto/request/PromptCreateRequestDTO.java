@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 public class PromptCreateRequestDTO {
 
+    //todo: 유저ID 필요
+
     @JsonProperty("promptName")
     private String title;
 

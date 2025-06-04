@@ -18,6 +18,9 @@ public class PromptController {
 
     private final PromptService promptService;
 
+
+    //todo: 유저ID 입력받아서 본인확인 메커니즘 필요
+
     //프롬프트 상세 조회
     @GetMapping("/{id}")
     public ResponseEntity<PromptDetailDTO> getPromptDetail(@PathVariable Long id) {
@@ -35,7 +38,7 @@ public class PromptController {
 
     //프롬프트 등록
     @PostMapping
-    public ResponseEntity<Long> createPrompt(@RequestBody PromptCreateRequestDTO dto) {
+    public ResponseEntity<Long> createPrompt(@RequestBody PromptCreateRequestDTO dto) { //todo: 유저 ID입력 필요
         Long id = promptService.savePrompt(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
@@ -54,7 +57,7 @@ public class PromptController {
 
     //프롬프트 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePrompt(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePrompt(@PathVariable Long id) { //todo: 유저ID 입력받아서 검증하는 메커니즘 필요
         promptService.deletePrompt(id);
         return ResponseEntity.noContent().build(); // 204 No Content
     }
