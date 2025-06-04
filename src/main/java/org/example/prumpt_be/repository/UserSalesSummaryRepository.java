@@ -1,6 +1,6 @@
 package org.example.prumpt_be.repository;
 
-import org.example.prumpt_be.entity.UserSalesSummary;
+import org.example.prumpt_be.dto.entity.UserSalesSummary;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;

@@ -1,7 +1,10 @@
 package org.example.prumpt_be.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.entity.*;
+import org.example.prumpt_be.dto.entity.Prompt;
+import org.example.prumpt_be.dto.entity.PromptPurchase;
+import org.example.prumpt_be.dto.entity.User;
+import org.example.prumpt_be.dto.entity.UserSalesSummary;
 import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
