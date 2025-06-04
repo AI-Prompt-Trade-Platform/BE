@@ -1,5 +1,8 @@
 package org.example.prumpt_be.dto.entity;
 
+
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,33 +23,28 @@ public class User {
     @Column(name = "auth0_id")
     private String auth0Id;
 
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "password_hash")
-    private String passwordHash;
-
     @Column(name = "point")
     private Integer point;
 
     @Column(name = "profile_name")
-    private String username;
+    private String profileName;
 
     @Column(name = "introduction")
     private String introduction;
 
     @Column(name = "profile_img_url")
-    private String profile;
+    private String profileImg_url;
 
     @Column(name = "banner_img_url")
-    private String banner;
+    private String bannerImg_url;
 
-    @Column(name = "user_role")
-    private String role;
+    @Column(name = "user_role", nullable = false)
+    private String user_role;
 
-    @Column(name = "created_at")
-    private java.time.LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private java.time.LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 }
+

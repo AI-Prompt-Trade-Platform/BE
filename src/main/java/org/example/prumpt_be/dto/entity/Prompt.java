@@ -1,8 +1,8 @@
 package org.example.prumpt_be.dto.entity;
 
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,16 +18,16 @@ public class Prompt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "promptid")
-    private Long promptId;
+    private Long promptID;
 
-    @Column(name = "prompt_name", nullable = false) // ✅ 정확히 DB 컬럼명과 일치시켜야 함
-    private String name;
+    @Column(name = "prompt_name", nullable = false)
+    private String promptName;
 
     @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    private String description; //썸네일에서 보기 편하게 하기위한 필드
 
     @Column(name = "prompt_content", columnDefinition = "TEXT")
-    private String content;
+    private String promptContent;
 
     @Column(name = "price")
     private int price;
@@ -40,7 +40,7 @@ public class Prompt {
 
     @ManyToOne
     @JoinColumn(name = "owner_id", referencedColumnName = "user_id", nullable = false)
-    private User owner;
+    private User ownerID;
 
     @OneToOne(mappedBy = "prompt", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PromptClassification classification;
@@ -51,7 +51,7 @@ public class Prompt {
             joinColumns = @JoinColumn(name = "prompt_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<Tag> tags;
+    private List<Tag> tags; 
 
     @OneToMany(mappedBy = "prompt")
     private List<Review> reviews;
@@ -62,3 +62,4 @@ public class Prompt {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
+
