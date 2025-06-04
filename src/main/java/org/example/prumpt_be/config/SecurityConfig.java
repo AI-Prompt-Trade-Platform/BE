@@ -12,6 +12,8 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
 
+import static org.springframework.http.HttpMethod.DELETE;
+
 
 //스프링부트 시큐리티 설정
 //Auth0 - JWT 방식
@@ -48,6 +50,9 @@ public class SecurityConfig {
                 // URL 권한 설정
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/users/**").permitAll()
+                        .requestMatchers(DELETE, "/users/**").permitAll()
                         .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
