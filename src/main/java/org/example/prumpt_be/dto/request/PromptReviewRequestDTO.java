@@ -1,10 +1,13 @@
 package org.example.prumpt_be.dto.request;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-public class ReviewCreateRequestDTO {
+@Getter
+@Setter
+public class PromptReviewRequestDTO {
     private Long promptId;
+    private Long userId;
     private int rating;
     private String content;
 }

@@ -94,6 +94,8 @@ public class PromptService {
     public Long savePrompt(PromptCreateRequestDTO dto) {
         System.out.println("📌 modelCategoryId: " + dto.getModelCategoryId());
         System.out.println("📌 typeCategoryId: " + dto.getTypeCategoryId());
+        System.out.println("🔥 title: " + dto.getTitle());
+
 
         User author = userRepository.findById(1L) // TODO: 인증 사용자로 대체
                 .orElseThrow(() -> new RuntimeException("Author not found"));

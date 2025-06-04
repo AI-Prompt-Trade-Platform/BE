@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -16,10 +17,10 @@ public class Prompt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "prompt_id")
+    @Column(name = "promptid")
     private Long promptId;
 
-    @Column(name = "prompt_name", nullable = false)
+    @Column(name = "prompt_name", nullable = false) // ✅ 정확히 DB 컬럼명과 일치시켜야 함
     private String name;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -28,6 +29,7 @@ public class Prompt {
     @Column(name = "prompt_content", columnDefinition = "TEXT")
     private String content;
 
+    @Column(name = "price")
     private int price;
 
     @Column(name = "ai_inspection_rate")
@@ -37,13 +39,11 @@ public class Prompt {
     private String exampleContentUrl;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
+    @JoinColumn(name = "owner_id", referencedColumnName = "user_id", nullable = false)
     private User owner;
 
     @OneToOne(mappedBy = "prompt", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private PromptClassification classification;
-
-
 
     @ManyToMany
     @JoinTable(
