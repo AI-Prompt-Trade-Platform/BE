@@ -1,16 +1,23 @@
-// src/main/java/org/example/prumpt_be/domain/entity/UserSalesSummaryId.java
 package org.example.prumpt_be.dto.entity;
+
+import jakarta.persistence.Embeddable;
+import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-// UserSalesSummary 엔티티의 복합키를 위한 클래스
+// 복합 키 클래스
+@Embeddable
+@Getter
+@Setter
+@NoArgsConstructor
+@EqualsAndHashCode
 public class UserSalesSummaryId implements Serializable {
-    private Integer userId;
+    private Long userId;
     private LocalDate summaryDate;
 
-    public UserSalesSummaryId(Integer userId, LocalDate summaryDate) {
+    public UserSalesSummaryId(Long userId, LocalDate summaryDate) {
         this.userId = userId;
         this.summaryDate = summaryDate;
     }
