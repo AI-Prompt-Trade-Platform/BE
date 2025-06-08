@@ -43,7 +43,7 @@ public class UserSalesSummaryScheduler {
         List<Users> allUsers = usersRepo.findAll();
 
         for (Users user : allUsers) {
-            Integer userId = user.getUserID();
+            Integer userId = user.getUserId();
 
             // 3. 해당 사용자 어제치 집계 호출
             Object[] result = purchasesRepo.findDailyProfitBySeller(userId, start, end);
@@ -55,10 +55,10 @@ public class UserSalesSummaryScheduler {
                     : BigDecimal.ZERO;
 
             // 5. 사용자의 수익 요약 레코드가 있으면 로드, 없으면 새로 생성
-            UserSalesSummary profit = profitRepo.findById(userId)
+            UserSalesSummary profit = profitRepo.findByUserID(userId)
                     .orElseGet(() -> {
                         UserSalesSummary dto = new UserSalesSummary();
-                        dto.setUser(user);
+                        dto.setUserID(user);
                         return dto;
                     });
 

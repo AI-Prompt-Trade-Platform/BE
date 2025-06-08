@@ -5,15 +5,13 @@ import org.example.prumpt_be.dto.request.PromptCreateRequestDto;
 import org.example.prumpt_be.dto.request.PromptUpdateRequestDto;
 import org.example.prumpt_be.dto.response.PromptSummaryDto; // 또는 상세 DTO 사용 가능
 import org.example.prumpt_be.repository.*;
-import org.example.prumpt_be.service.PromptCrudService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 // import java.time.LocalDateTime; // @UpdateTimestamp 사용 시 직접 설정 불필요
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * PromptCrudService 인터페이스의 구현체입니다.
@@ -42,7 +40,7 @@ public class PromptCrudServiceImpl implements PromptCrudService {
     @Override
     @Transactional // 데이터 변경이 있으므로 트랜잭션 적용
     public PromptSummaryDto createPrompt(String auth0Id, PromptCreateRequestDto createRequestDto) {
-        User owner = userRepository.findByAuth0Id(auth0Id)
+        Users owner = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id)); // TODO: 맞춤형 예외
 
         Prompt prompt = Prompt.builder()
@@ -51,7 +49,7 @@ public class PromptCrudServiceImpl implements PromptCrudService {
                 .price(createRequestDto.getPrice())
                 .exampleContentUrl(createRequestDto.getExampleContentUrl())
                 .model(createRequestDto.getModelInfo()) // 스키마 상 'model' 컬럼, DTO에서는 'modelInfo'로 가정
-                .owner(owner)
+                .ownerID(owner)
                 // aiInspectionRate는 초기에는 null이거나 기본값, 또는 별도 검수 프로세스를 통해 설정될 수 있습니다.
                 // createdAt, updatedAt은 @CreationTimestamp, @UpdateTimestamp에 의해 자동 관리됩니다.
                 .classifications(new ArrayList<>()) // ★ classifications 리스트 초기화
@@ -121,63 +119,55 @@ public class PromptCrudServiceImpl implements PromptCrudService {
      */
     @Override
     @Transactional
-    public PromptSummaryDto updatePrompt(String auth0Id, Long promptId, PromptUpdateRequestDto updateRequestDto) {
-        User currentUser = userRepository.findByAuth0Id(auth0Id)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
+    public PromptSummaryDto updatePrompt(
+            String auth0Id,
+            Long promptId,
+            PromptUpdateRequestDto dto
+    ) {
+        Users currentUser = userRepository.findByAuth0Id(auth0Id)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        Prompt promptToUpdate = promptRepository.findById(promptId)
-                .orElseThrow(() -> new RuntimeException("수정할 프롬프트를 찾을 수 없습니다. ID: " + promptId));
+        Prompt prompt = promptRepository.findById(promptId)
+                .orElseThrow(() -> new RuntimeException("프롬프트를 찾을 수 없습니다."));
 
-        // 프롬프트 소유자 확인
-        if (!promptToUpdate.getOwner().getUserId().equals(currentUser.getUserId())) {
-            throw new RuntimeException("이 프롬프트를 수정할 권한이 없습니다."); // TODO: 맞춤형 권한 예외 처리
+        // 소유자 검증
+        if (!prompt.getOwnerID().getUserId().equals(currentUser.getUserId())) {
+            throw new RuntimeException("수정 권한이 없습니다.");
         }
 
-        // 프롬프트 기본 정보 업데이트
-        promptToUpdate.setPromptName(updateRequestDto.getPromptName());
-        promptToUpdate.setPromptContent(updateRequestDto.getPromptContent());
-        promptToUpdate.setPrice(updateRequestDto.getPrice());
-        promptToUpdate.setExampleContentUrl(updateRequestDto.getExampleContentUrl());
-        promptToUpdate.setModel(updateRequestDto.getModelInfo());
-        // updatedAt은 @UpdateTimestamp에 의해 자동 업데이트 됩니다.
+        // 1) 기본 정보 업데이트
+        prompt.setPromptName(dto.getPromptName());
+        prompt.setPromptContent(dto.getPromptContent());
+        prompt.setPrice(dto.getPrice());
+        prompt.setExampleContentUrl(dto.getExampleContentUrl());
+        prompt.setModel(dto.getModelInfo());
+        // updatedAt 은 @UpdateTimestamp 자동 반영
 
-        // 카테고리 정보 업데이트 (기존 분류 모두 삭제 후 새로 추가하는 방식)
-        // 1. 기존 PromptClassification 정보 삭제
-        //    promptToUpdate.getClassifications().clear(); // 이렇게 하면 orphanRemoval=true 일 경우 DB에서도 삭제됨
-        //    또는 promptClassificationRepository.deleteByPrompt_PromptId(promptId); 와 같이 직접 삭제
-        //    주의: clear() 후 save() 시 Hibernate의 동작 방식에 따라 문제가 생길 수 있으므로,
-        //    명시적으로 repository를 통해 삭제하는 것이 더 안전할 수 있습니다.
-        //    여기서는 컬렉션을 비우고 새 항목을 추가한 후 Prompt를 저장하는 방식을 사용합니다.
-        //    (orphanRemoval=true가 Prompt 엔티티의 classifications에 설정되어 있어야 함)
+        // 2) classifications 전부 지우기 → orphanRemoval로 DB에서도 삭제됨
+        prompt.getClassifications().clear();
 
-        // 기존 연관관계 제거 (DB에서 직접 삭제가 아닌, 컬렉션에서만 제거 후 새롭게 추가)
-        // DB에서 직접 삭제하려면 repository.deleteAll(promptToUpdate.getClassifications()) 또는 repository.deleteByPrompt(promptToUpdate) 필요
-        promptClassificationRepository.deleteAll(promptToUpdate.getClassifications()); // 기존 연관된 PromptClassification 삭제
-        promptToUpdate.getClassifications().clear(); // 컬렉션 비우기
+        // 3) 새 PromptClassification 추가
+        for (Integer modelCatId : dto.getModelCategoryIds()) {
+            ModelCategory mc = modelCategoryRepository.findById(modelCatId)
+                    .orElseThrow(() -> new RuntimeException("모델 카테고리 없음: " + modelCatId));
+            for (Integer typeCatId : dto.getTypeCategoryIds()) {
+                TypeCategory tc = typeCategoryRepository.findById(typeCatId)
+                        .orElseThrow(() -> new RuntimeException("타입 카테고리 없음: " + typeCatId));
 
-        // 2. 새로운 PromptClassification 정보 추가
-        if (updateRequestDto.getModelCategoryIds() != null && !updateRequestDto.getModelCategoryIds().isEmpty() &&
-                updateRequestDto.getTypeCategoryIds() != null && !updateRequestDto.getTypeCategoryIds().isEmpty()) {
-
-            Integer modelCategoryId = updateRequestDto.getModelCategoryIds().get(0); // 예시로 첫 번째 요소 사용
-            Integer typeCategoryId = updateRequestDto.getTypeCategoryIds().get(0);   // 예시로 첫 번째 요소 사용
-
-            ModelCategory modelCategory = modelCategoryRepository.findById(modelCategoryId)
-                    .orElseThrow(() -> new RuntimeException("모델 카테고리를 찾을 수 없습니다. ID: " + modelCategoryId));
-            TypeCategory typeCategory = typeCategoryRepository.findById(typeCategoryId)
-                    .orElseThrow(() -> new RuntimeException("타입 카테고리를 찾을 수 없습니다. ID: " + typeCategoryId));
-
-            PromptClassification newClassification = PromptClassification.builder()
-                    .prompt(promptToUpdate)
-                    .modelCategory(modelCategory)
-                    .typeCategory(typeCategory)
-                    .build();
-            promptToUpdate.getClassifications().add(newClassification);
+                PromptClassification pc = PromptClassification.builder()
+                        .prompt(prompt)
+                        .modelCategory(mc)
+                        .typeCategory(tc)
+                        .build();
+                prompt.getClassifications().add(pc);
+            }
         }
 
-        Prompt updatedPrompt = promptRepository.save(promptToUpdate);
-        return convertToPromptSummaryDto(updatedPrompt);
+        // 4) 한 번에 save → cascade로 classification 삭제·삽입 모두 처리
+        Prompt saved = promptRepository.save(prompt);
+        return convertToPromptSummaryDto(saved);
     }
+
 
     /**
      * 특정 ID의 프롬프트를 삭제합니다.
@@ -193,14 +183,14 @@ public class PromptCrudServiceImpl implements PromptCrudService {
     @Override
     @Transactional
     public void deletePrompt(String auth0Id, Long promptId) {
-        User currentUser = userRepository.findByAuth0Id(auth0Id)
+        Users currentUser = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
 
         Prompt promptToDelete = promptRepository.findById(promptId)
                 .orElseThrow(() -> new RuntimeException("삭제할 프롬프트를 찾을 수 없습니다. ID: " + promptId));
 
         // 프롬프트 소유자 확인
-        if (!promptToDelete.getOwner().getUserId().equals(currentUser.getUserId())) {
+        if (promptToDelete.getOwnerID().getUserId() != (currentUser.getUserId())) {
             throw new RuntimeException("이 프롬프트를 삭제할 권한이 없습니다.");
         }
 
@@ -218,18 +208,6 @@ public class PromptCrudServiceImpl implements PromptCrudService {
         if (prompt == null) {
             return null;
         }
-        String ownerName = (prompt.getOwner() != null && prompt.getOwner().getProfileName() != null)
-                ? prompt.getOwner().getProfileName()
-                : "Unknown"; // 또는 적절한 기본값 설정
-
-        return PromptSummaryDto.builder()
-                .promptId(prompt.getPromptId())
-                .promptName(prompt.getPromptName())
-                .price(prompt.getPrice())
-                .ownerProfileName(ownerName)
-                .thumbnailImageUrl(prompt.getExampleContentUrl())
-                .aiInspectionRate(prompt.getAiInspectionRate())
-                .createdAt(prompt.getCreatedAt())
-                .build();
+        return HomePageServiceImpl.getPromptSummaryDto(prompt);
     }
 }

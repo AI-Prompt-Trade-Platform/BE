@@ -12,13 +12,12 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode
 public class UserSalesSummaryId implements Serializable {
-    private Long userId;
+    private Long userID;
     private LocalDate summaryDate;
 
     public UserSalesSummaryId(Long userId, LocalDate summaryDate) {
-        this.userId = userId;
+        this.userID = userId;
         this.summaryDate = summaryDate;
     }
 
@@ -27,12 +26,12 @@ public class UserSalesSummaryId implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof UserSalesSummaryId that)) return false;
-        return Objects.equals(userId, that.userId) &&
+        return Objects.equals(userID, that.userID) &&
                Objects.equals(summaryDate, that.summaryDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, summaryDate);
+        return Objects.hash(userID, summaryDate);
     }
 }

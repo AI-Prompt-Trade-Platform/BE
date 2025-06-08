@@ -41,7 +41,7 @@ public class Prompt {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
+    private Users ownerID;
 
     @Column(name = "example_content_url", length = 255)
     private String exampleContentUrl;
@@ -73,7 +73,7 @@ public class Prompt {
     @Builder.Default
     private List<UserWishlist> wishlists = new ArrayList<>();
 
-    @OneToMany(mappedBy = "prompt", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "promptID", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<PromptReview> reviews = new ArrayList<>();
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class EvaluateController {
     private final AInspectionService aInspectionService;
 
-    // 프롬프트 평가 API
+    // todo: 프롬프트 평가 API (필수)
     @Operation(summary = "AI에 프롬프트 평가 요청", description = "ID와 프롬프트 내용, 타입을 입력받아 AI에 평가를 요청합니다.")
     @PostMapping("/prompts/upload")
     public void uploadPrompt(

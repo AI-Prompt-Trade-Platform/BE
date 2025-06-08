@@ -25,11 +25,11 @@ public class PromptClassification {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "model_category_id", referencedColumnName = "model_id")
+    @JoinColumn(name = "model_id", referencedColumnName = "model_id")
     private ModelCategory modelCategory;
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_category_id", referencedColumnName = "type_id")
+    @JoinColumn(name = "type_id", referencedColumnName = "type_id")
     private TypeCategory typeCategory;
 }

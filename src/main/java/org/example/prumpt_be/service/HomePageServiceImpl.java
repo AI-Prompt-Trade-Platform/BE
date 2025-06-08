@@ -70,8 +70,12 @@ public class HomePageServiceImpl implements HomePageService {
         if (prompt == null) {
             return null;
         }
-        String ownerName = (prompt.getOwner() != null && prompt.getOwner().getProfileName() != null)
-                ? prompt.getOwner().getProfileName()
+        return getPromptSummaryDto(prompt);
+    }
+
+    static PromptSummaryDto getPromptSummaryDto(Prompt prompt) {
+        String ownerName = (prompt.getOwnerID() != null && prompt.getOwnerID().getProfileName() != null)
+                ? prompt.getOwnerID().getProfileName()
                 : "Unknown";
 
         return PromptSummaryDto.builder()

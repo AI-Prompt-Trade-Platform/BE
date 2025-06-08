@@ -1,14 +1,13 @@
 package org.example.prumpt_be.service;
 
 import org.example.prumpt_be.dto.entity.Prompt;
-import org.example.prumpt_be.dto.entity.User;
 import org.example.prumpt_be.dto.entity.UserWishlist;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.dto.response.PageResponseDto;
 import org.example.prumpt_be.dto.response.PromptSummaryDto;
 import org.example.prumpt_be.repository.PromptRepository;
 import org.example.prumpt_be.repository.UserRepository;
 import org.example.prumpt_be.repository.WishlistRepository; // UserWishlistRepository의 이름이 WishlistRepository라고 가정
-import org.example.prumpt_be.service.WishlistService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
+
+import static org.example.prumpt_be.service.HomePageServiceImpl.getPromptSummaryDto;
 
 /**
  * WishlistService 인터페이스의 구현체입니다.
@@ -33,7 +34,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     @Transactional
     public void addPromptToWishlist(String auth0Id, Long promptId) {
-        User user = userRepository.findByAuth0Id(auth0Id)
+        Users user = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id)); // TODO: 맞춤형 예외 처리
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new RuntimeException("프롬프트를 찾을 수 없습니다. ID: " + promptId)); // TODO: 맞춤형 예외 처리
@@ -58,7 +59,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     @Transactional
     public void removePromptFromWishlist(String auth0Id, Long promptId) {
-        User user = userRepository.findByAuth0Id(auth0Id)
+        Users user = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new RuntimeException("프롬프트를 찾을 수 없습니다. ID: " + promptId));
@@ -72,7 +73,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     @Transactional(readOnly = true)
     public PageResponseDto<PromptSummaryDto> getUserWishlist(String auth0Id, Pageable pageable) {
-        User user = userRepository.findByAuth0Id(auth0Id)
+        Users user = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
 
         // WishlistRepository에 findByUserOrderByAddedAtDesc 메소드가 있어야 합니다.
@@ -88,7 +89,7 @@ public class WishlistServiceImpl implements WishlistService {
     @Override
     @Transactional(readOnly = true)
     public boolean isPromptInWishlist(String auth0Id, Long promptId) {
-        User user = userRepository.findByAuth0Id(auth0Id)
+        Users user = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
         // Prompt 존재 여부도 확인하는 것이 좋습니다.
         Prompt prompt = promptRepository.findById(promptId)
@@ -106,22 +107,6 @@ public class WishlistServiceImpl implements WishlistService {
             return null;
         }
         Prompt prompt = userWishlist.getPrompt();
-        String ownerName = (prompt.getOwner() != null && prompt.getOwner().getProfileName() != null)
-                ? prompt.getOwner().getProfileName()
-                : "Unknown";
-
-        return PromptSummaryDto.builder()
-                .promptId(prompt.getPromptId())
-                .promptName(prompt.getPromptName())
-                .price(prompt.getPrice())
-                .ownerProfileName(ownerName)
-                .thumbnailImageUrl(prompt.getExampleContentUrl())
-                .aiInspectionRate(prompt.getAiInspectionRate())
-                // 위시리스트 DTO에는 프롬프트의 생성일보다는 위시리스트에 추가된 날짜가 더 의미있을 수 있습니다.
-                // 필요하다면 PromptSummaryDto를 확장한 WishlistPromptDto를 만들거나,
-                // PromptSummaryDto에 addedAt 필드를 추가하고 userWishlist.getAddedAt() 값을 설정할 수 있습니다.
-                // 여기서는 일단 프롬프트의 createdAt을 사용합니다.
-                .createdAt(prompt.getCreatedAt()) 
-                .build();
+        return getPromptSummaryDto(prompt);
     }
 }

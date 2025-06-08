@@ -32,11 +32,11 @@ public class PromptReview {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prompt_id", nullable = false) // purchase.getPrompt() 로도 접근 가능하지만, denormalization 또는 직접 접근을 위해 유지할 수 있음.
-    private Prompt prompt;
+    private Prompt promptID;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewer_id", nullable = false) // purchase.getBuyer() 로도 접근 가능.
-    private User reviewer;
+    private Users reviewer;
 
     @Column // Nullable
     private Double rate;

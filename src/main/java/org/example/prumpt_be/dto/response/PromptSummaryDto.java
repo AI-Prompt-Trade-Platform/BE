@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
+// todo: 프롬프트 설명 정보 필요
 public class PromptSummaryDto {
     private Long promptId;
     private String promptName;

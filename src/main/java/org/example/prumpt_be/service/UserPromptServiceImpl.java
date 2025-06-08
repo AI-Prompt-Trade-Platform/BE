@@ -2,14 +2,13 @@ package org.example.prumpt_be.service;
 
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.entity.PromptPurchase;
-import org.example.prumpt_be.dto.entity.User;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.dto.response.PageResponseDto;
 import org.example.prumpt_be.dto.response.PurchasedPromptDto;
 import org.example.prumpt_be.dto.response.SellingPromptDto;
 import org.example.prumpt_be.repository.PromptPurchaseRepository;
 import org.example.prumpt_be.repository.PromptRepository;
 import org.example.prumpt_be.repository.UserRepository;
-import org.example.prumpt_be.service.UserPromptService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,7 +34,7 @@ public class UserPromptServiceImpl implements UserPromptService {
 
     @Override
     public PageResponseDto<PurchasedPromptDto> getMyPurchasedPrompts(String auth0Id, Pageable pageable) {
-        User currentUser = userRepository.findByAuth0Id(auth0Id)
+        Users currentUser = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("User not found with auth0Id: " + auth0Id));
 
         Page<PromptPurchase> purchasesPage = promptPurchaseRepository.findByBuyerOrderByPurchasedAtDesc(currentUser, pageable);
@@ -45,10 +44,10 @@ public class UserPromptServiceImpl implements UserPromptService {
 
     @Override
     public PageResponseDto<SellingPromptDto> getMySellingPrompts(String auth0Id, Pageable pageable) {
-        User currentUser = userRepository.findByAuth0Id(auth0Id)
+        Users currentUser = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new RuntimeException("User not found with auth0Id: " + auth0Id));
 
-        Page<Prompt> sellingPromptsPage = promptRepository.findByOwnerOrderByCreatedAtDesc(currentUser, pageable);
+        Page<Prompt> sellingPromptsPage = promptRepository.findByOwnerIDOrderByCreatedAtDesc(currentUser, pageable);
         
         return new PageResponseDto<>(sellingPromptsPage.map(this::convertToSellingPromptDto));
     }
@@ -61,7 +60,7 @@ public class UserPromptServiceImpl implements UserPromptService {
                 .promptId(prompt.getPromptId())
                 .promptName(prompt.getPromptName())
                 .price(prompt.getPrice())
-                .ownerProfileName(prompt.getOwner() != null ? prompt.getOwner().getProfileName() : "Unknown")
+                .ownerProfileName(prompt.getOwnerID() != null ? prompt.getOwnerID().getProfileName() : "Unknown")
                 .thumbnailImageUrl(prompt.getExampleContentUrl())
                 .purchasedAt(purchase.getPurchasedAt())
                 // .reviewId(reviewOpt.map(PromptReview::getReviewId).orElse(null))

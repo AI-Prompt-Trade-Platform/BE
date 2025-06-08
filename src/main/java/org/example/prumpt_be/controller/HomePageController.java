@@ -17,9 +17,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+
+
 /**
  * 홈 화면 및 프롬프트 목록 조회 관련 API 엔드포인트를 제공하는 컨트롤러입니다.
  * 인기 프롬프트, 최신 프롬프트, 검색, 카테고리 필터링 기능을 담당합니다.
+ * todo: 홈 화면 기능 컨트롤러 (필수)
  */
 @RestController
 @RequestMapping("/api") // 기본 경로를 /api 로 변경하여 /api/home 과 /api/prompts 를 구분
@@ -58,7 +61,7 @@ public class HomePageController { // 클래스명을 PromptListingController 등
     }
 
     @Operation(summary = "프롬프트 카테고리 필터링", description = "모델 카테고리 및/또는 타입 카테고리 슬러그로 프롬프트를 필터링합니다.")
-    @GetMapping("/prompts/filter") // 새로운 필터링 엔드포인트
+    @GetMapping("/home/prompts/filter") // 새로운 필터링 엔드포인트
     public ResponseEntity<PageResponseDto<PromptSummaryDto>> filterPromptsByCategories(
             @Parameter(description = "모델 카테고리 슬러그 (예: 'chatgpt', 'midjourney')")
             @RequestParam(required = false) String modelCategorySlug,

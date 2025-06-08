@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * 사용자 프로필 관련 API 엔드포인트를 제공하는 컨트롤러입니다.
  * 프로필 조회 및 수정을 담당합니다.
+ * todo: 사용자 프로필 관련 API 컨트롤러 (필수)
  */
 @RestController
 @RequestMapping("/api/users")

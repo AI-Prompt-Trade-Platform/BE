@@ -11,13 +11,13 @@ import lombok.Setter;
 @Getter @Setter
 @NoArgsConstructor
 public class PromptDto {
-    private int promptID;
+    private Long promptID;
     private String promptName;
     private String promptContent;
     private Integer price;
     private List<ReviewDto> reviews = new ArrayList<>();
 
-    public PromptDto(int promptID, String promptName, String promptContent, Integer price) {
+    public PromptDto(Long promptID, String promptName, String promptContent, Integer price) {
         this.promptID = promptID;
         this.promptName = promptName;
         this.promptContent = promptContent;

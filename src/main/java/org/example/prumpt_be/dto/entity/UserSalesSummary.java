@@ -24,7 +24,7 @@ public class UserSalesSummary {
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
-    private User user;
+    private Users userID;
 
     @Id
     @Column(name = "summary_date", nullable = false)

@@ -4,10 +4,7 @@ import org.example.prumpt_be.dto.request.PromptCreateRequestDto;
 import org.example.prumpt_be.dto.request.PromptUpdateRequestDto;
 import org.example.prumpt_be.dto.response.PromptSummaryDto; // 또는 상세 DTO
 
-/**
- * 프롬프트의 생성(Create), 읽기(Read), 갱신(Update), 삭제(Delete) 관련
- * 비즈니스 로직을 처리하는 서비스 인터페이스입니다.
- */
+// todo: 프롬프트CRUD 서비스 인터페이스
 public interface PromptCrudService {
 
     /**

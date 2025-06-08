@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 import java.util.List;
 
+
+//todo: 수익 모니터링 페이지 컨트롤러 (필수)
 @RestController
 @RequestMapping("/api/monitoring")
 public class MonitoringController {
@@ -25,7 +27,7 @@ public class MonitoringController {
 
     // 인증된 사용자의 수익요약 페이지 조회
     @Operation(summary = "유저의 거래요약 페이지", description = "유저의 토큰을 받아 거래요약 페이지를 조회합니다.")
-    @GetMapping("/prompts")
+    @GetMapping("/user")
     public MoniteringResponseDto listPrompts(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(name = "period", required = false, defaultValue = "MONTH") MoniteringService.PeriodType period) {

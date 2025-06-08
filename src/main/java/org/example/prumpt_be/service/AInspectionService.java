@@ -1,19 +1,23 @@
 package org.example.prumpt_be.service;
 
-import org.example.prumpt_be.dto.entity.Prompts;
+import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
 import org.example.prumpt_be.repository.PromptsRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+
+// todo: ChatGPT 평가와 S3 업로드를 위한 서비스 (필수)
 @Service
+//@ConditionalOnProperty(name = "aws.s3.enabled", havingValue = "true") //서비스할떈 이부분 제거
 public class AInspectionService {
 
-    private final S3Uploader s3Uploader; // S3에 파일 업로드 하는 클래스
+//    private final S3Uploader s3Uploader; // S3에 파일 업로드 하는 클래스
     private final OpenAiService openAiService;
     private final PromptsRepository promptsRepository;
 
-    public AInspectionService(S3Uploader s3Uploader , OpenAiService openAiService, PromptsRepository promptsRepository) {
-        this.s3Uploader = s3Uploader;
+    public AInspectionService(OpenAiService openAiService, PromptsRepository promptsRepository) {
+//        this.s3Uploader = s3Uploader;
         this.openAiService = openAiService;
         this.promptsRepository = promptsRepository;
     }
@@ -26,8 +30,8 @@ public class AInspectionService {
 
 
         // 2. 어떤 프롬프트인지 조회 (DB저장 이후)
-        int promptId = request.getPromptId();
-        Prompts prompt = promptsRepository.findById((long) promptId)
+        Long promptId = request.getPromptId();
+        Prompt prompt = promptsRepository.findById((long) promptId)
                 .orElseThrow(() -> new IllegalArgumentException("Prompt not found with id: " + promptId));
 
         // 3. AI 평가 요청
@@ -36,7 +40,7 @@ public class AInspectionService {
         System.out.println(inspectionResult);
 
         // 4. 평가 결과 저장
-        prompt.setAi_inspection_rate(inspectionResult);
+        prompt.setAiInspectionRate(inspectionResult);
         promptsRepository.save(prompt);
     }
 
