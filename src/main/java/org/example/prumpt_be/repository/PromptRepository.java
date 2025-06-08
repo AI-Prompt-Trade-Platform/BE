@@ -1,15 +1,13 @@
 package org.example.prumpt_be.repository;
 
 import org.example.prumpt_be.dto.entity.Prompt;
-import org.example.prumpt_be.dto.entity.User;
+import org.example.prumpt_be.dto.entity.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-// import java.util.List; // findByOwnerOrderByCreatedAtDesc 가 Page를 반환하므로 List는 필요 없을 수 있습니다.
 
 /**
  * Prompt 엔티티에 대한 데이터 접근을 처리하는 JpaRepository 인터페이스입니다.
@@ -22,7 +20,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
     // Page<Prompt> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     // 특정 사용자가 소유한 프롬프트 목록 (마이페이지 - 판매중인 프롬프트)
-    Page<Prompt> findByOwnerOrderByCreatedAtDesc(User owner, Pageable pageable);
+    Page<Prompt> findByOwnerIDOrderByCreatedAtDesc(Users owner, Pageable pageable);
 
     // 프롬프트 이름 또는 내용으로 검색 (홈 화면 - 검색창)
     @Query("SELECT p FROM Prompt p WHERE p.promptName LIKE %:keyword% OR p.promptContent LIKE %:keyword%")

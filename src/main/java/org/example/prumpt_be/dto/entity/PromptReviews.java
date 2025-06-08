@@ -44,7 +44,6 @@
 //        this.updatedAt = java.time.LocalDateTime.now();
 //    }
 //
-//
 //    public void setPromptId(Prompts prompt) {
 //        this.promptID = prompt;
 //    }

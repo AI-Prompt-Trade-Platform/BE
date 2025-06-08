@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
+//todo: OpenAI API를 호출하는 서비스 (필수)
 @Service
 @RequiredArgsConstructor
 public class OpenAiService {

@@ -1,9 +1,7 @@
 -- 사용자 테이블
-CREATE TABLE users (
-                       user_id INT PRIMARY KEY COMMENT '유저 고유 ID',
+CREATE TABLE IF NOT EXISTS `users` (
+                      `user_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY COMMENT '유저 고유 ID',
                        auth0_id VARCHAR(255) NOT NULL UNIQUE COMMENT 'Auth0 고유 식별자',
-                       email VARCHAR(255) NOT NULL UNIQUE COMMENT '이메일',
-                       email_verified TINYINT(1) NOT NULL DEFAULT 0 COMMENT '이메일 인증 여부(0:미인증, 1:인증)',
                        point INT NOT NULL DEFAULT 0 COMMENT '포인트',
                        profile_name VARCHAR(255) NOT NULL COMMENT '프로필 이름',
                        introduction TEXT COMMENT '자기소개',
@@ -15,7 +13,7 @@ CREATE TABLE users (
 ) COMMENT='유저 정보 테이블' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 모델 카테고리 이름 테이블
-CREATE TABLE `model_categories` (
+CREATE TABLE IF NOT EXISTS  `model_categories` (
                                     `model_id`   INT          NOT NULL AUTO_INCREMENT COMMENT '필수: 카테고리 PK',
                                     `model_name` VARCHAR(50)  NOT NULL                COMMENT '필수: AI모델 이름',
                                     `model_slug` VARCHAR(50)  NOT NULL                COMMENT '필수: URL 식별자',
@@ -23,8 +21,9 @@ CREATE TABLE `model_categories` (
                                     UNIQUE KEY `uniq_category_model_slug` (`model_slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
 -- 종류 카테고리 이름 테이블
-CREATE TABLE `type_categories` (
+CREATE TABLE IF NOT EXISTS  `type_categories` (
                                    `type_id`   INT          NOT NULL AUTO_INCREMENT COMMENT '필수: 카테고리 PK',
                                    `type_name` VARCHAR(50)  NOT NULL                COMMENT '필수: 프롬프트 종류 이름',
                                    `type_slug` VARCHAR(50)  NOT NULL                COMMENT '필수: URL 식별자',
@@ -33,7 +32,7 @@ CREATE TABLE `type_categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 프롬프트 테이블
-CREATE TABLE prompts (
+CREATE TABLE IF NOT EXISTS  prompts (
                          prompt_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '프롬프트 고유 ID',
                          prompt_name VARCHAR(255) NOT NULL COMMENT '프롬프트 이름',
                          prompt_content TEXT COMMENT '프롬프트 내용',
@@ -46,32 +45,33 @@ CREATE TABLE prompts (
                          model TEXT COMMENT 'AI 모델 정보',
                          INDEX idx_prompts_owner_id       (owner_id),
                          INDEX idx_prompts_created_at     (created_at),
+                         UNIQUE (prompt_name, owner_id),
                          CONSTRAINT fk_prompts_owner
                              FOREIGN KEY (owner_id) REFERENCES users(user_id)
 ) COMMENT='프롬프트 정보 테이블' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 프롬프트 분류 테이블
-CREATE TABLE `prompt_classifications` (
+CREATE TABLE IF NOT EXISTS  `prompt_classifications` (
                                           `prompt_id`         INT NOT NULL COMMENT '필수: 프롬프트 ID',
-                                          `model_category_id` INT NOT NULL COMMENT '필수: 모델 카테고리 ID',
-                                          `type_category_id`  INT NOT NULL COMMENT '필수: 타입 카테고리 ID',
-                                          PRIMARY KEY (`prompt_id`,`model_category_id`,`type_category_id`),
+                                          `model_id` INT NOT NULL COMMENT '필수: 모델 카테고리 ID',
+                                          `type_id`  INT NOT NULL COMMENT '필수: 타입 카테고리 ID',
+                                          PRIMARY KEY (`prompt_id`,`model_id`,`type_id`),
                                           CONSTRAINT `fk_pc_prompt` FOREIGN KEY (`prompt_id`) REFERENCES `prompts`(`prompt_id`) ON DELETE CASCADE,
-                                          CONSTRAINT `fk_pc_model_category` FOREIGN KEY (`model_category_id`) REFERENCES `model_categories`(`model_id`) ON DELETE CASCADE,
-                                          CONSTRAINT `fk_pc_type_category` FOREIGN KEY (`type_category_id`) REFERENCES `type_categories`(`type_id`) ON DELETE CASCADE,
-                                          ADD INDEX idx_pc_model_category_id  (model_category_id),
-                                          ADD INDEX idx_pc_type_category_id   (type_category_id)
+                                          CONSTRAINT `fk_pc_model_category` FOREIGN KEY (`model_id`) REFERENCES `model_categories`(`model_id`) ON DELETE CASCADE,
+                                          CONSTRAINT `fk_pc_type_category` FOREIGN KEY (`type_id`) REFERENCES `type_categories`(`type_id`) ON DELETE CASCADE,
+                                          INDEX idx_pc_model_id  (model_id),
+                                          INDEX idx_pc_type_id   (type_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 거래 내역 테이블
-CREATE TABLE prompt_purchases (
+CREATE TABLE IF NOT EXISTS  prompt_purchases (
                                   purchase_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '프롬프트 구매 고유 ID',
                                   buyer_id INT NOT NULL COMMENT '구매자(유저) ID (외래키)',
                                   prompt_id INT NOT NULL COMMENT '구매한 프롬프트 ID (외래키)',
                                   purchased_at DATETIME NOT NULL COMMENT '구매 시각',
-                                  ADD INDEX idx_purchases_buyer_id     (buyer_id),
-                                  ADD INDEX idx_purchases_prompt_id    (prompt_id),
-                                  ADD INDEX idx_purchases_purchased_at (purchased_at),
+                                  INDEX idx_purchases_buyer_id     (buyer_id),
+                                  INDEX idx_purchases_prompt_id    (prompt_id),
+                                  INDEX idx_purchases_purchased_at (purchased_at),
                                   CONSTRAINT fk_purchases_buyer
                                       FOREIGN KEY (buyer_id) REFERENCES users(user_id),
                                   CONSTRAINT fk_purchases_prompt
@@ -79,7 +79,7 @@ CREATE TABLE prompt_purchases (
 ) COMMENT='프롬프트 구매 내역 테이블' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 수익 요약 테이블
-CREATE TABLE user_sales_summary (
+CREATE TABLE IF NOT EXISTS  user_sales_summary (
                                     user_id      INT        NOT NULL COMMENT '유저 고유 ID (users 테이블과 매핑)',
                                     summary_date DATE       NOT NULL COMMENT '집계 대상 날짜',
                                     sold_count   INT        NOT NULL COMMENT '당일 판매 건수',
@@ -97,7 +97,7 @@ CREATE TABLE user_sales_summary (
 
 
 -- 위시리스트 테이블
-CREATE TABLE `user_wishlist` (
+CREATE TABLE IF NOT EXISTS  `user_wishlist` (
                                  `wishlist_id`   INT            NOT NULL AUTO_INCREMENT COMMENT '필수: 위시리스트 ID',
                                  `user_id`       INT            NOT NULL COMMENT '필수: 사용자 ID',
                                  `prompt_id`     INT            NOT NULL COMMENT '필수: 프롬프트 ID',
@@ -111,7 +111,7 @@ CREATE TABLE `user_wishlist` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 후기 테이블
-CREATE TABLE prompt_reviews (
+CREATE TABLE IF NOT EXISTS  prompt_reviews (
                                 review_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '프롬프트 리뷰 고유 ID',
                                 purchase_id INT NOT NULL UNIQUE COMMENT '구매 내역 ID (외래키, 1:1)',
                                 prompt_id INT NOT NULL COMMENT '프롬프트 ID (외래키, N:1)',

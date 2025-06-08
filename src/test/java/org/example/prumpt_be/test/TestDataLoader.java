@@ -69,12 +69,12 @@ public class TestDataLoader {
             for (int i = 1; i <= 5; i++) {
                 Prompts prompt = new Prompts();
                 // promptID는 auto-increment이므로 set하지 않음
-                prompt.setPromptName("User" + user.getUserID() + " Prompt " + i);
-                prompt.setPromptContent("Content for User" + user.getUserID() + "'s Prompt " + i);
+                prompt.setPromptName("User" + user.getUserId() + " Prompt " + i);
+                prompt.setPromptContent("Content for User" + user.getUserId() + "'s Prompt " + i);
                 prompt.setPrice(1000 + i * 100);
                 prompt.setAi_inspection_rate("0.0");
                 prompt.setOwnerID(user);
-                prompt.setExample_content_url("https://example.com/user" + user.getUserID() + "/prompt" + i + ".png");
+                prompt.setExample_content_url("https://example.com/user" + user.getUserId() + "/prompt" + i + ".png");
                 prompt.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")).minusDays(promptSeq));
                 prompt.setUpdatedAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
                 promptsRepo.save(prompt);
@@ -111,7 +111,7 @@ public class TestDataLoader {
         for (Users user : users) {
             // 해당 유저가 소유한 프롬프트 ID 목록
             List<Integer> ownedPromptIds = promptsRepo.findAll().stream()
-                    .filter(p -> p.getOwnerID().getUserID() == user.getUserID())
+                    .filter(p -> p.getOwnerID().getUserId() == user.getUserId())
                     .map(Prompts::getPromptID)
                     .toList();
 
@@ -134,9 +134,9 @@ public class TestDataLoader {
             );
 
             UserSalesSummary summary = new UserSalesSummary();
-            summary.setUserId(user.getUserID()); // 복합키 필수
+            summary.setUserId(user.getUserId()); // 복합키 필수
             summary.setSummaryDate(randomDate); // 랜덤 날짜 설정
-            summary.setUser(usersRepo.findById(String.valueOf(user.getUserID())).orElseThrow());
+            summary.setUser(usersRepo.findById(String.valueOf(user.getUserId())).orElseThrow());
             summary.setSoldCount(soldCount);
             summary.setTotalRevenue(BigDecimal.valueOf(totalRevenue));
             summary.setLastUpdated(now);

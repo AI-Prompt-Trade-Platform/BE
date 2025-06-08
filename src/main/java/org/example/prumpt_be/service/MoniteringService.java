@@ -15,10 +15,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+//todo: 수익 모니터링 서비스 (필수)
 @Service
 @RequiredArgsConstructor
 public class MoniteringService {
-    //todo: Service 테스트 작성하기
 
     private final UserSalesSummaryRepository userSalesSummaryRepository;
     private final PromptReviewsRepository promptReviewsRepository;
@@ -33,7 +34,7 @@ public class MoniteringService {
     public int getUserIdByAuth0Id(String auth0_id) {
         return usersRepository.findByAuth0Id(auth0_id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."))
-                .getUserID();
+                .getUserId();
     }
 
     //특정 기간(1달,6개월,1년 중 택1) 동안의 일일 수익 조회(FE에서 차트 그리기용)

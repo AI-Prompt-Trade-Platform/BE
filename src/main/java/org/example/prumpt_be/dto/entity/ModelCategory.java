@@ -20,7 +20,7 @@ public class ModelCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "model_id")
-    private Integer modelId; // 스키마는 INT
+    private Integer modelId; // 스키마는 Int
 
     @Column(name = "model_name", nullable = false, length = 50)
     private String modelName;

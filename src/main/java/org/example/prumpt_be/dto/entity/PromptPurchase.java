@@ -26,7 +26,7 @@ public class PromptPurchase {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_id", nullable = false)
-    private User buyer;
+    private Users buyer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prompt_id", nullable = false)
@@ -37,6 +37,6 @@ public class PromptPurchase {
     private LocalDateTime purchasedAt;
 
     // PromptReview 와의 1:1 관계 (PromptPurchase 가 주인)
-    @OneToOne(mappedBy = "purchase", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "purchase", cascade = CascadeType.ALL)
     private PromptReview review;
 }

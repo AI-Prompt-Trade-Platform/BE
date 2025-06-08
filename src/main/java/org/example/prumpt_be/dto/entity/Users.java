@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -16,18 +17,18 @@ public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private int userID;
+    private Integer userId;
 
     @Column(name = "auth0_id", nullable = false, unique = true)
     private String auth0Id;
 
-    @Column(nullable = false,  columnDefinition = "INT DEFAULT 0")
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private int point;
 
     @Column(name = "profile_name", nullable = false)
     private String profileName;
 
-    @Column(name = "introduction",columnDefinition = "TEXT")
+    @Column(name = "introduction", columnDefinition = "TEXT")
     private String introduction;
 
     @Column(name = "profile_img_url")
@@ -42,8 +43,19 @@ public class Users {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = LocalDateTime.now();
+        }
+    }
 
 
     public Users(String sub) {
@@ -56,5 +68,4 @@ public class Users {
         this.user_role = "USER"; // 기본 사용자 역할
         this.createdAt = LocalDateTime.now();
     }
-
 }

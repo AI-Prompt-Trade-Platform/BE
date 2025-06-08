@@ -7,12 +7,12 @@ import lombok.Getter;
 @Getter
 public class PromptAvgRateDto {
     private final int ownerId;
-    private final int promptId;
+    private final Long promptId;
     private final String promptName;
     private final Double avgRateFromEachPrompt;
 
     public PromptAvgRateDto(int ownerId,
-                            int promptId,
+                            Long promptId,
                             String promptName,
                             Double avgRateFromEachPrompt) {
         this.ownerId  = ownerId;
