@@ -1,37 +1,34 @@
 package org.example.prumpt_be.dto.entity;
 
-
-import lombok.Getter;
-import lombok.Setter;
 import jakarta.persistence.*;
-import lombok.*;
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@RequiredArgsConstructor
+@Table(name = "users")
 public class Users {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Integer userID;
+    private Integer userId;
 
-    @Column(name = "auth0_id")
+    @Column(name = "auth0_id", nullable = false, unique = true)
     private String auth0Id;
 
-    @Column(name = "point")
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer point;
 
-    @Column(name = "profile_name")
+    @Column(name = "profile_name", nullable = false)
     private String profileName;
 
-    @Column(name = "introduction")
+    @Column(name = "introduction", columnDefinition = "TEXT")
     private String introduction;
 
     @Column(name = "profile_img_url")
@@ -46,6 +43,7 @@ public class Users {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -71,4 +69,3 @@ public class Users {
         this.createdAt = LocalDateTime.now();
     }
 }
-

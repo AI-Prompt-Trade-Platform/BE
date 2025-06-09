@@ -2,6 +2,7 @@ package org.example.prumpt_be.dto.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "prompt_classifications", indexes = {
@@ -18,6 +19,7 @@ public class PromptClassification {
 
     @Id
     @OneToOne(fetch = FetchType.LAZY)
+
     @JoinColumn(name = "prompt_id", referencedColumnName = "prompt_id")
     private Prompt prompt;
 

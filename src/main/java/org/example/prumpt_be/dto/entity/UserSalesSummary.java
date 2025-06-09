@@ -1,40 +1,42 @@
 package org.example.prumpt_be.dto.entity;
 
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "user_sales_summary", indexes = {
+        @Index(name = "idx_summary_summary_date", columnList = "summary_date")
+})
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "user_sales_summary")
+@AllArgsConstructor
+@Builder
+@IdClass(UserSalesSummaryId.class)
 public class UserSalesSummary {
-    @Id
-    @Column(name = "user_id")
-    private Integer userId;
 
-    @Column(name = "summary_date")
+    @Id
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    private Users userID;
+
+    @Id
+    @Column(name = "summary_date", nullable = false)
     private LocalDate summaryDate;
 
-    @Column(name = "sold_count")
-    private Integer soldCount = 0;
+    @Column(name = "sold_count", nullable = false)
+    private Integer soldCount;
 
-    @Column(name = "total_revenue")
-    private BigDecimal totalRevenue = BigDecimal.ZERO;
+    @Column(name = "total_revenue", nullable = false, precision = 19, scale = 2)
+    private BigDecimal totalRevenue;
 
-    @Column(name = "last_updated")
+    @UpdateTimestamp // 생성 및 수정 시 자동으로 시간 기록 (스키마는 last_updated)
+    @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
-
-    public UserSalesSummary(Integer userId, LocalDate summaryDate) {
-        this.userId = userId;
-        this.summaryDate = summaryDate;
-        this.soldCount = 0;
-        this.lastUpdated = LocalDateTime.now();
-    }
 }
