@@ -1,8 +1,10 @@
 package org.example.prumpt_be.dto.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,7 @@ public class TypeCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Column(name = "type_id")
     private Integer typeId; // 스키마는 INT
 

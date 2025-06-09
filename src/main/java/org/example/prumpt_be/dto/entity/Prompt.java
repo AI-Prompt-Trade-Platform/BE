@@ -1,5 +1,6 @@
 package org.example.prumpt_be.dto.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,10 +20,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "prompts")
 public class Prompt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Column(name = "prompt_id")
     private Long promptId; // 스키마는 INT지만 Long 사용 권장
 
@@ -58,10 +61,7 @@ public class Prompt {
     @Column(columnDefinition = "TEXT")
     private String model; // AI 모델 정보 (JSON 형태 등으로 저장 가능)
 
-    // PromptClassification 과의 관계 (Prompt가 주인)
-    // Prompt 하나는 여러개의 model category와 type category 조합을 가질 수 있는 상황으로 보임 (스키마 상 PK가 prompt_id, model_category_id, type_category_id)
-    // 이는 Prompt 입장에서 @OneToMany 관계가 될 것임.
-    @OneToMany(mappedBy = "prompt", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "prompt", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<PromptClassification> classifications = new ArrayList<>();
 
@@ -76,4 +76,22 @@ public class Prompt {
     @OneToMany(mappedBy = "promptID", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<PromptReview> reviews = new ArrayList<>();
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description; //썸네일에서 보기 편하게 하기위한 필드
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id", referencedColumnName = "user_id", nullable = false)
+    private Users ownerID;
+
+    @ManyToMany
+    @JoinTable(
+            name = "prompt_tag",
+            joinColumns = @JoinColumn(name = "prompt_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<Tag> tags; 
+
+    @OneToMany(mappedBy = "prompt")
+    private List<Review> reviews;
 }

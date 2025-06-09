@@ -1,9 +1,9 @@
 package org.example.prumpt_be.dto.entity;
 
-import jakarta.persistence.Embeddable;
 import lombok.*;
-
 import java.io.Serializable;
+import java.util.Objects;
+import jakarta.persistence.Embeddable;
 
 // 복합 키 클래스
 @Embeddable
@@ -12,8 +12,22 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode // 복합키 클래스는 equals와 hashCode 구현 필수
-public class PromptClassificationId implements Serializable { // public으로 변경
-    private Long prompt; // Prompt 엔티티의 ID 타입과 일치
-    private Integer modelCategory; // ModelCategory 엔티티의 ID 타입과 일치
-    private Integer typeCategory;  // TypeCategory 엔티티의 ID 타입과 일치
+public class PromptClassificationId implements Serializable {
+    private Long prompt;
+    private Integer modelCategory;
+    private Integer typeCategory;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PromptClassificationId that)) return false;
+        return Objects.equals(prompt, that.prompt)
+            && Objects.equals(modelCategory, that.modelCategory)
+            && Objects.equals(typeCategory, that.typeCategory);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(prompt, modelCategory, typeCategory);
+    }
 }

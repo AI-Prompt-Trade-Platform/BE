@@ -1,5 +1,7 @@
 package org.example.prumpt_be.repository;
-
+import org.springframework.data.jpa.repository.EntityGraph;
+import java.util.List;
+import java.util.Optional;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.entity.Users;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,18 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface PromptRepository extends JpaRepository<Prompt, Long> {
+  
+    @EntityGraph(attributePaths = {
+            "owner", "tags", "classification",
+            "classification.modelCategory", "classification.typeCategory"
+    })
+    List<Prompt> findAll();
+
+    @EntityGraph(attributePaths = {
+            "owner", "tags", "classification",
+            "classification.modelCategory", "classification.typeCategory"
+    })
+    Optional<Prompt> findById(Long id);
 
     // 최근 등록된 프롬프트 (홈 화면) -> Pageable에 정렬 정보가 있으므로 findAll로 대체 가능
     // Page<Prompt> findAllByOrderByCreatedAtDesc(Pageable pageable);

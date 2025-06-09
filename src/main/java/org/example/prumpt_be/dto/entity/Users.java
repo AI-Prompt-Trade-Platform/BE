@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.LocalDateTime;
 
 @Entity
+
 @Getter
 @Setter
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ public class Users {
     private String auth0Id;
 
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
-    private int point;
+    private Integer point;
 
     @Column(name = "profile_name", nullable = false)
     private String profileName;

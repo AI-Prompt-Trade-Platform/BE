@@ -1,5 +1,7 @@
 package org.example.prumpt_be.repository;
 
+import org.example.prumpt_be.dto.entity.PromptPurchase;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.entity.PromptPurchase;
 import org.example.prumpt_be.dto.entity.Users;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PromptPurchaseRepository extends JpaRepository<PromptPurchase, Long> {
+public interface PromptPurchaseRepository extends JpaRepository<PromptPurchase, Integer> {
     // 특정 사용자가 구매한 프롬프트 목록 ( 마이페이지 - 구매한 프롬프트 )
     Page<PromptPurchase> findByBuyerOrderByPurchasedAtDesc(Users buyer, Pageable pageable);
 
