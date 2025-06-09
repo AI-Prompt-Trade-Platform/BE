@@ -17,8 +17,7 @@ public class PromptClassificationId implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PromptClassificationId)) return false;
-        PromptClassificationId that = (PromptClassificationId) o;
+        if (!(o instanceof PromptClassificationId that)) return false;
         return Objects.equals(prompt, that.prompt)
             && Objects.equals(modelCategory, that.modelCategory)
             && Objects.equals(typeCategory, that.typeCategory);

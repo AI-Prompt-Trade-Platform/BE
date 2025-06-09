@@ -8,6 +8,6 @@ import lombok.Setter;
 public class PromptReviewRequestDTO {
     private Long promptId;
     private Long userId;
-    private int rating;
+    private Double rating;
     private String content;
 }

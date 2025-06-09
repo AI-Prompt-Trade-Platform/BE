@@ -1,7 +1,6 @@
 package org.example.prumpt_be.dto.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,9 +39,9 @@ public class Prompt {
 
     @ManyToOne
     @JoinColumn(name = "owner_id", referencedColumnName = "user_id", nullable = false)
-    private User ownerID;
+    private Users ownerID;
 
-    @OneToOne(mappedBy = "prompt", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "prompt", cascade = CascadeType.ALL)
     private PromptClassification classification;
 
     @ManyToMany

@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface    PromptReviewRepository extends JpaRepository<PromptReview, Long> {
-    List<PromptReview> findByPromptPromptId(Long promptId);
+    List<PromptReview> findByPromptPromptID(Long promptId);
 }

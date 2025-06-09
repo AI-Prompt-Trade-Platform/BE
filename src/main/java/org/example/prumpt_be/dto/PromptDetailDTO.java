@@ -13,7 +13,6 @@ public class PromptDetailDTO {
     private String description;
     private String content;
     private int price;
-    private String authorName;
     private String authorProfile;
     private String category;
     private List<String> tags;

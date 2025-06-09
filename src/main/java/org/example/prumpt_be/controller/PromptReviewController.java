@@ -16,8 +16,9 @@ public class PromptReviewController {
 
     private final PromptReviewService reviewService;
 
+    // 프롬프트 리뷰 등록
     @PostMapping
-    public ResponseEntity<Void> createReview(@RequestBody PromptReviewRequestDTO request) {
+    public ResponseEntity<Void> createReview(@RequestBody PromptReviewRequestDTO request) { //todo: 유저 ID 검증 메커니즘 필요
         reviewService.createReview(request);
         return ResponseEntity.ok().build();
     }

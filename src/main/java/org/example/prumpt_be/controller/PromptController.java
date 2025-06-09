@@ -18,9 +18,6 @@ public class PromptController {
 
     private final PromptService promptService;
 
-
-    //todo: 유저ID 입력받아서 본인확인 메커니즘 필요
-
     //프롬프트 상세 조회
     @GetMapping("/{id}")
     public ResponseEntity<PromptDetailDTO> getPromptDetail(@PathVariable Long id) {
@@ -38,7 +35,7 @@ public class PromptController {
 
     //프롬프트 등록
     @PostMapping
-    public ResponseEntity<Long> createPrompt(@RequestBody PromptCreateRequestDTO dto) { //todo: 유저 ID입력 필요
+    public ResponseEntity<Long> createPrompt(@RequestBody PromptCreateRequestDTO dto) {     //todo: 유저ID 입력받아서 본인확인 메커니즘 필요
         Long id = promptService.savePrompt(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
@@ -48,7 +45,7 @@ public class PromptController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Void> updatePrompt(
-            @PathVariable Long id,
+            @PathVariable Long id,     //todo: 유저ID 입력받아서 본인확인 메커니즘 필요
             @RequestBody PromptUpdateRequestDTO dto) {
 
         promptService.updatePrompt(id, dto);

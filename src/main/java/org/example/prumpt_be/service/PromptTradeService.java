@@ -3,7 +3,7 @@ package org.example.prumpt_be.service;
 import lombok.RequiredArgsConstructor;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.entity.PromptPurchase;
-import org.example.prumpt_be.dto.entity.User;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.dto.entity.UserSalesSummary;
 import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Service;
@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -24,13 +25,13 @@ public class PromptTradeService {
 
     @Transactional
     public void purchasePrompt(Integer promptId, Integer buyerId) {
-        Prompt prompt = promptRepository.findById(promptId)
+        Prompt prompt = promptRepository.findById(Long.valueOf(promptId))
                 .orElseThrow(() -> new RuntimeException("프롬프트가 존재하지 않습니다"));
 
-        User buyer = userRepository.findById(buyerId)
+        Users buyer = userRepository.findById(Long.valueOf(buyerId))
                 .orElseThrow(() -> new RuntimeException("구매자 정보 없음"));
 
-        if (prompt.getOwnerId().equals(buyerId)) {
+        if (Objects.equals(prompt.getOwnerID().getUserID(), buyerId)) {
             throw new RuntimeException("자기 자신의 프롬프트는 구매할 수 없습니다");
         }
 
@@ -39,7 +40,7 @@ public class PromptTradeService {
             throw new RuntimeException("이미 구매한 프롬프트입니다");
         }
 
-        User seller = userRepository.findById(prompt.getOwnerId())
+        Users seller = userRepository.findById(Long.valueOf(prompt.getOwnerID().getUserID()))
                 .orElseThrow(() -> new RuntimeException("판매자 정보 없음"));
 
         int price = prompt.getPrice();
@@ -61,8 +62,8 @@ public class PromptTradeService {
         purchaseRepository.save(purchase);
 
         // 판매 요약 업데이트
-        UserSalesSummary summary = summaryRepository.findByUserIdAndSummaryDate(seller.getUserId(), LocalDate.now())
-                .orElseGet(() -> new UserSalesSummary(seller.getUserId(), LocalDate.now()));
+        UserSalesSummary summary = summaryRepository.findByUserIdAndSummaryDate(seller.getUserID(), LocalDate.now())
+                .orElseGet(() -> new UserSalesSummary(seller.getUserID(), LocalDate.now()));
 
         summary.setSoldCount(summary.getSoldCount() + 1);
         summary.setTotalRevenue(summary.getTotalRevenue().add(BigDecimal.valueOf(price)));

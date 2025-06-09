@@ -22,35 +22,35 @@ public class PromptReviewServiceImpl implements PromptReviewService {
     @Override
     public void createReview(PromptReviewRequestDTO request) {
         PromptReview review = new PromptReview();
-        review.setUser(
+        review.setReviewer(
                 userRepository.findById(request.getUserId())
                         .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + request.getUserId()))
         );
 
-        review.setPrompt(
+        review.setPromptID(
                 promptRepository.findById(request.getPromptId())
                         .orElseThrow(() -> new IllegalArgumentException("해당 프롬프트를 찾을 수 없습니다: " + request.getPromptId()))
         );
 
-        review.setRating(request.getRating());
-        review.setContent(request.getContent());
-        review.setCreatedAt(LocalDateTime.now());
+        review.setRate(request.getRating());
+        review.setReviewContent(request.getContent());
+        review.setReviewedAt(LocalDateTime.now());
 
         reviewRepository.save(review);
     }
 
     @Override
     public List<PromptReview> getReviewsByPromptId(Long promptId) {
-        return reviewRepository.findByPromptPromptId(promptId);
+        return reviewRepository.findByPromptPromptID(promptId);
     }
 
     @Override
     public void updateReview(Long reviewId, PromptReviewRequestDTO request) {
         PromptReview review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 리뷰를 찾을 수 없습니다: " + reviewId));
-        review.setRating(request.getRating());
-        review.setContent(request.getContent());
-        review.setCreatedAt(LocalDateTime.now());
+        review.setRate(request.getRating());
+        review.setReviewContent(request.getContent());
+        review.setReviewedAt(LocalDateTime.now());
         reviewRepository.save(review);
     }
 

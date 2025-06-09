@@ -19,9 +19,9 @@ public class Review {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private Users userID;
 
     @ManyToOne
     @JoinColumn(name = "prompt_id")
-    private Prompt prompt;
+    private Prompt promptID;
 }

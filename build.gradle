@@ -33,6 +33,7 @@ dependencies {
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
     implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
     implementation 'androidx.privacysandbox.tools:tools-core:1.0.0-alpha13'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'

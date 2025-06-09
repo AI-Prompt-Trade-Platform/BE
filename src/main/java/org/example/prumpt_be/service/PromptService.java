@@ -36,19 +36,18 @@ public class PromptService {
                     PromptClassification classification = prompt.getClassification();
 
                     return new PromptDetailDTO(
-                            prompt.getPromptId(),
-                            prompt.getName(),
+                            prompt.getPromptID(),
+                            prompt.getPromptName(),
                             prompt.getDescription(),
-                            prompt.getContent(),
+                            prompt.getPromptContent(),
                             prompt.getPrice(),
-                            prompt.getOwner().getUsername(),
-                            prompt.getOwner().getProfile(),
+                            prompt.getOwnerID().getProfileName(),
                             "", // categoryName 미사용
                             prompt.getTags().stream().map(Tag::getName).toList(),
                             false, // 위시리스트 여부 추후 구현
                             avgRating,
                             prompt.getReviews().stream()
-                                    .map(r -> new ReviewDTO(r.getUser().getUsername(), r.getRating(), r.getContent()))
+                                    .map(r -> new ReviewDTO(r.getUserID().getProfileName(), r.getRating(), r.getContent()))
                                     .toList(),
                             classification != null ? classification.getModelCategory().getModelName() : "",
                             classification != null ? classification.getTypeCategory().getTypeName() : ""
@@ -68,19 +67,18 @@ public class PromptService {
                     PromptClassification classification = prompt.getClassification();
 
                     return new PromptDetailDTO(
-                            prompt.getPromptId(),
-                            prompt.getName(),
+                            prompt.getPromptID(),
+                            prompt.getPromptName(),
                             prompt.getDescription(),
-                            prompt.getContent(),
+                            prompt.getPromptContent(),
                             prompt.getPrice(),
-                            prompt.getOwner().getUsername(),
-                            prompt.getOwner().getProfile(),
+                            prompt.getOwnerID().getProfileName(),
                             "", // categoryName 미사용
                             prompt.getTags().stream().map(Tag::getName).toList(),
                             false,
                             avgRating,
                             prompt.getReviews().stream()
-                                    .map(r -> new ReviewDTO(r.getUser().getUsername(), r.getRating(), r.getContent()))
+                                    .map(r -> new ReviewDTO(r.getUserID().getProfileName(), r.getRating(), r.getContent()))
                                     .toList(),
                             classification != null ? classification.getModelCategory().getModelName() : "",
                             classification != null ? classification.getTypeCategory().getTypeName() : ""
@@ -97,16 +95,16 @@ public class PromptService {
         System.out.println("🔥 title: " + dto.getTitle());
 
 
-        User author = userRepository.findById(1L) // TODO: 인증 사용자로 대체
+        Users author = userRepository.findById(1L) // TODO: 인증 사용자로 대체
                 .orElseThrow(() -> new RuntimeException("Author not found"));
 
         Prompt prompt = Prompt.builder()
-                .name(dto.getTitle())
-                .content(dto.getContent())
+                .promptName(dto.getTitle())
+                .promptContent(dto.getContent())
                 .price(dto.getPrice())
                 .aiInspectionRate(dto.getAiInspectionRate())
                 .exampleContentUrl(dto.getExampleContentUrl())
-                .owner(author)
+                .ownerID(author)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -123,7 +121,7 @@ public class PromptService {
                 .build();
 
         promptClassificationRepository.save(classification);
-        return prompt.getPromptId();
+        return prompt.getPromptID();
     }
 
     private List<Tag> resolveTags(List<String> tagNames) {
@@ -139,8 +137,8 @@ public class PromptService {
         Prompt prompt = promptRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prompt not found"));
 
-        prompt.setName(dto.getTitle());
-        prompt.setContent(dto.getContent());
+        prompt.setPromptName(dto.getTitle());
+        prompt.setPromptContent(dto.getContent());
         prompt.setPrice(dto.getPrice());
         prompt.setUpdatedAt(LocalDateTime.now());
 

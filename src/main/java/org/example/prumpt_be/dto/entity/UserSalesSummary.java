@@ -35,7 +35,6 @@ public class UserSalesSummary {
         this.userId = userId;
         this.summaryDate = summaryDate;
         this.soldCount = 0;
-        this.totalRevenue = BigDecimal.ZERO;
         this.lastUpdated = LocalDateTime.now();
     }
 }
