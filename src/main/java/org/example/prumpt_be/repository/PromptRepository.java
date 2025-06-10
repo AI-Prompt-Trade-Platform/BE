@@ -15,19 +15,16 @@ import org.springframework.stereotype.Repository;
  * Prompt 엔티티에 대한 데이터 접근을 처리하는 JpaRepository 인터페이스입니다.
  * 프롬프트의 기본적인 CRUD 연산 외에 다양한 조건의 프롬프트 조회를 담당합니다.
  */
+
+
+//todo: 이거말고 promptsRepository로 전부 변경
 @Repository
 public interface PromptRepository extends JpaRepository<Prompt, Long> {
   
-    @EntityGraph(attributePaths = {
-            "owner", "tags", "classification",
-            "classification.modelCategory", "classification.typeCategory"
-    })
+
     List<Prompt> findAll();
 
-    @EntityGraph(attributePaths = {
-            "owner", "tags", "classification",
-            "classification.modelCategory", "classification.typeCategory"
-    })
+
     Optional<Prompt> findById(Long id);
 
     // 최근 등록된 프롬프트 (홈 화면) -> Pageable에 정렬 정보가 있으므로 findAll로 대체 가능
@@ -61,5 +58,16 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
             @Param("modelCategorySlug") String modelCategorySlug,
             @Param("typeCategorySlug") String typeCategorySlug,
             Pageable pageable
+    );
+
+    @Query("""
+        SELECT p.ownerID.userId
+          FROM Prompt p
+         WHERE p.promptId   = :promptId
+           AND p.ownerID.auth0Id = :auth0Id
+    """)
+    Optional<Integer> findOwnerUserIdByPromptIdAndOwnerAuth0Id(
+            @Param("promptId") Long promptId,
+            @Param("auth0Id")  String auth0Id
     );
 }

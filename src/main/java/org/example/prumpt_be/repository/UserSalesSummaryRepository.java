@@ -72,6 +72,10 @@ public interface UserSalesSummaryRepository
 """)
     long countTotalSalesByUserId(@Param("userID") int userID);
 
-    @Query("SELECT u FROM UserSalesSummary u WHERE u.userID.userId = :userId")
-    Optional<UserSalesSummary> findByUserID(@Param("userId") Integer userId);
+    @Query("SELECT u FROM UserSalesSummary u WHERE u.userID.userId = :userId AND u.summaryDate = :summaryDate")
+    Optional<UserSalesSummary> findByUserIDAndSummaryDate(
+            @Param("userId") Integer userId,
+            @Param("summaryDate") LocalDate summaryDate
+    );
+
 }

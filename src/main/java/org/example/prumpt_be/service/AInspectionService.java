@@ -22,7 +22,7 @@ public class AInspectionService {
         this.promptsRepository = promptsRepository;
     }
 
-    // todo: 준호님 프롬프트 등록Service에 연동 필요(준호님이 S3에 업로드하는 로직이어야 함)
+    // todo: 수영님 프롬프트 등록Service에 연동 필요(준호님이 S3에 업로드하는 로직이어야 함)
     public void handlePromptUploadAndEvaluation(PromptUploadRequestDto request) {
         // 1. S3에 파일 업로드
 //        String exampleUrl = s3Uploader.upload(request.getExampleValue()); // S3Uploader를 사용하여 파일 업로드

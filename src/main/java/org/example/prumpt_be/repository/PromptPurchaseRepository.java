@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PromptPurchaseRepository extends JpaRepository<PromptPurchase, Integer> {
@@ -22,4 +23,7 @@ public interface PromptPurchaseRepository extends JpaRepository<PromptPurchase, 
 
     // 특정 프롬프트의 구매 내역 (판매자 입장에서 볼 수 있음)
     List<PromptPurchase> findByPromptOrderByPurchasedAtDesc(Prompt prompt);
+
+    // 특정 사용자가 특정 프롬프트를 구매한 내역 조회
+    Optional<PromptPurchase> findByBuyerAndPrompt(Users buyer, Prompt prompt);
 }

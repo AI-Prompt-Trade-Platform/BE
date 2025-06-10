@@ -32,23 +32,28 @@ CREATE TABLE IF NOT EXISTS  `type_categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 프롬프트 테이블
-CREATE TABLE IF NOT EXISTS  prompts (
-                         prompt_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '프롬프트 고유 ID',
-                         prompt_name VARCHAR(255) NOT NULL COMMENT '프롬프트 이름',
-                         prompt_content TEXT COMMENT '프롬프트 내용',
-                         price INT COMMENT '프롬프트 가격',
-                         ai_inspection_rate VARCHAR(255) COMMENT 'AI 검수 등급',
-                         owner_id INT NOT NULL COMMENT '프롬프트 소유자(유저) ID',
-                         example_content_url VARCHAR(255) COMMENT '예시 콘텐츠 URL',
-                         created_at DATETIME NOT NULL COMMENT '생성 시각',
-                         updated_at DATETIME COMMENT '수정 시각',
-                         model TEXT COMMENT 'AI 모델 정보',
-                         INDEX idx_prompts_owner_id       (owner_id),
-                         INDEX idx_prompts_created_at     (created_at),
-                         UNIQUE (prompt_name, owner_id),
-                         CONSTRAINT fk_prompts_owner
-                             FOREIGN KEY (owner_id) REFERENCES users(user_id)
-) COMMENT='프롬프트 정보 테이블' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS prompts (
+        prompt_id           INT          AUTO_INCREMENT PRIMARY KEY COMMENT '프롬프트 고유 ID',
+        prompt_name         VARCHAR(255) NOT NULL                COMMENT '프롬프트 이름',
+        prompt_content      TEXT                                  COMMENT '프롬프트 내용',
+        price               INT                                   COMMENT '프롬프트 가격',
+        ai_inspection_rate  VARCHAR(255)                         COMMENT 'AI 검수 등급',
+        example_content_url VARCHAR(255)                         COMMENT '예시 콘텐츠 URL',
+        description         TEXT                                  COMMENT '썸네일에서 보기 편하게 하기 위한 필드',
+        model               TEXT                                  COMMENT 'AI 모델 정보 (JSON 등)',
+        owner_id            INT          NOT NULL                COMMENT '프롬프트 소유자(유저) ID',
+        created_at          DATETIME     NOT NULL                COMMENT '생성 시각',
+        updated_at          DATETIME                             COMMENT '수정 시각',
+        UNIQUE KEY uq_prompt_name_owner (prompt_name, owner_id),
+        INDEX idx_prompts_owner_id       (owner_id),
+        INDEX idx_prompts_created_at     (created_at),
+        CONSTRAINT fk_prompts_owner
+            FOREIGN KEY (owner_id) REFERENCES users(user_id)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+    COMMENT='프롬프트 정보 테이블';
+
 
 -- 프롬프트 분류 테이블
 CREATE TABLE IF NOT EXISTS  `prompt_classifications` (
@@ -64,19 +69,24 @@ CREATE TABLE IF NOT EXISTS  `prompt_classifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 거래 내역 테이블
-CREATE TABLE IF NOT EXISTS  prompt_purchases (
-                                  purchase_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '프롬프트 구매 고유 ID',
-                                  buyer_id INT NOT NULL COMMENT '구매자(유저) ID (외래키)',
-                                  prompt_id INT NOT NULL COMMENT '구매한 프롬프트 ID (외래키)',
-                                  purchased_at DATETIME NOT NULL COMMENT '구매 시각',
-                                  INDEX idx_purchases_buyer_id     (buyer_id),
-                                  INDEX idx_purchases_prompt_id    (prompt_id),
-                                  INDEX idx_purchases_purchased_at (purchased_at),
-                                  CONSTRAINT fk_purchases_buyer
-                                      FOREIGN KEY (buyer_id) REFERENCES users(user_id),
-                                  CONSTRAINT fk_purchases_prompt
-                                      FOREIGN KEY (prompt_id) REFERENCES prompts(prompt_id)
-) COMMENT='프롬프트 구매 내역 테이블' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE TABLE IF NOT EXISTS prompt_purchases (
+                                                purchase_id    INT          AUTO_INCREMENT PRIMARY KEY COMMENT '구매 고유 ID',
+                                                buyer_id       INT          NOT NULL              COMMENT '구매자 ID',
+                                                prompt_id      INT          NOT NULL              COMMENT '프롬프트 ID',
+                                                purchased_at   DATETIME     NOT NULL              COMMENT '구매 시각',
+                                                UNIQUE KEY uq_purchases_buyer_prompt (buyer_id, prompt_id),
+                                                INDEX idx_purchases_buyer_id     (buyer_id),
+                                                INDEX idx_purchases_prompt_id    (prompt_id),
+                                                INDEX idx_purchases_purchased_at (purchased_at),
+                                                CONSTRAINT fk_purchases_buyer
+                                                    FOREIGN KEY (buyer_id) REFERENCES users(user_id),
+                                                CONSTRAINT fk_purchases_prompt
+                                                    FOREIGN KEY (prompt_id) REFERENCES prompts(prompt_id)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+    COMMENT='프롬프트 구매 내역 테이블';
+
 
 -- 수익 요약 테이블
 CREATE TABLE IF NOT EXISTS  user_sales_summary (
@@ -111,21 +121,75 @@ CREATE TABLE IF NOT EXISTS  `user_wishlist` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 후기 테이블
-CREATE TABLE IF NOT EXISTS  prompt_reviews (
-                                review_id INT AUTO_INCREMENT PRIMARY KEY COMMENT '프롬프트 리뷰 고유 ID',
-                                purchase_id INT NOT NULL UNIQUE COMMENT '구매 내역 ID (외래키, 1:1)',
-                                prompt_id INT NOT NULL COMMENT '프롬프트 ID (외래키, N:1)',
-                                reviewer_id INT NOT NULL COMMENT '리뷰 작성자 ID (외래키, N:1)',
-                                rate DOUBLE COMMENT '리뷰 평점',
-                                review_content VARCHAR(255) COMMENT '리뷰 내용',
-                                reviewed_at DATETIME COMMENT '리뷰 작성 시각',
-                                updated_at DATETIME COMMENT '리뷰 수정 시각',
-                                CONSTRAINT fk_prompt_reviews_purchase
-                                    FOREIGN KEY (purchase_id) REFERENCES prompt_purchases(purchase_id),
-                                CONSTRAINT fk_prompt_reviews_prompt
-                                    FOREIGN KEY (prompt_id) REFERENCES prompts(prompt_id),
-                                CONSTRAINT fk_prompt_reviews_reviewer
-                                    FOREIGN KEY (reviewer_id) REFERENCES users(user_id),
-                                INDEX idx_reviews_prompt_id    (prompt_id),
-                                INDEX idx_reviews_reviewed_at  (reviewed_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='프롬프트 리뷰 테이블';
+CREATE TABLE IF NOT EXISTS prompt_reviews (
+                                              review_id         INT          AUTO_INCREMENT PRIMARY KEY COMMENT '프롬프트 리뷰 고유 ID',
+                                              purchase_id       INT          NOT NULL              COMMENT '구매 내역 ID (1:1 매핑)',
+                                              prompt_id         INT          NOT NULL              COMMENT '프롬프트 ID (N:1 매핑)',
+                                              reviewer_id       INT          NOT NULL              COMMENT '리뷰 작성자 ID (N:1 매핑)',
+                                              rate              DOUBLE                              COMMENT '리뷰 평점',
+                                              review_content    VARCHAR(255)                        COMMENT '리뷰 내용',
+                                              reviewed_at       DATETIME     NOT NULL              COMMENT '리뷰 작성 시각',
+                                              updated_at        DATETIME                             COMMENT '리뷰 수정 시각',
+                                              UNIQUE KEY uq_prompt_reviews_purchase (purchase_id),
+                                              INDEX idx_reviews_prompt_id       (prompt_id),
+                                              INDEX idx_reviews_reviewed_at     (reviewed_at),
+                                              CONSTRAINT fk_prompt_reviews_purchase FOREIGN KEY (purchase_id)
+                                                  REFERENCES prompt_purchases(purchase_id),
+                                              CONSTRAINT fk_prompt_reviews_prompt    FOREIGN KEY (prompt_id)
+                                                  REFERENCES prompts(prompt_id),
+                                              CONSTRAINT fk_prompt_reviews_reviewer  FOREIGN KEY (reviewer_id)
+                                                  REFERENCES users(user_id)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+    COMMENT='프롬프트 리뷰 테이블';
+
+
+-- 모델 카테고리
+CREATE TABLE IF NOT EXISTS model_categories (
+                                                model_id   INT          AUTO_INCREMENT PRIMARY KEY COMMENT '모델 카테고리 고유 ID',
+                                                model_name VARCHAR(50)  NOT NULL              COMMENT '모델 카테고리 이름',
+                                                model_slug VARCHAR(50)  NOT NULL              COMMENT '모델 슬러그 (고유)',
+                                                UNIQUE KEY uq_model_categories_model_slug (model_slug)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+    COMMENT='모델 카테고리 이름 테이블';
+
+-- 종류 카테고리
+CREATE TABLE IF NOT EXISTS type_categories (
+                                               type_id    INT          AUTO_INCREMENT PRIMARY KEY COMMENT '타입 카테고리 고유 ID',
+                                               type_name  VARCHAR(50)  NOT NULL              COMMENT '타입 카테고리 이름',
+                                               type_slug  VARCHAR(50)  NOT NULL              COMMENT '타입 슬러그 (고유)',
+                                               UNIQUE KEY uniq_category_type_slug (type_slug)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+    COMMENT='유형 카테고리 테이블';
+
+
+
+-- 태그? 카테고리
+CREATE TABLE IF NOT EXISTS tags (
+                                    id   BIGINT       AUTO_INCREMENT PRIMARY KEY COMMENT '태그 고유 ID',
+                                    name VARCHAR(255)                      COMMENT '태그 이름'
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+    COMMENT='태그 테이블';
+
+-- 프롬프트 ↔ 태그 매핑 테이블
+CREATE TABLE IF NOT EXISTS prompt_tag (
+                                          prompt_id INT   NOT NULL COMMENT '프롬프트 ID',
+                                          tag_id    BIGINT NOT NULL COMMENT '태그 ID',
+                                          PRIMARY KEY (prompt_id, tag_id),
+                                          INDEX idx_pt_prompt_id (prompt_id),
+                                          INDEX idx_pt_tag_id    (tag_id),
+                                          CONSTRAINT fk_pt_prompt
+                                              FOREIGN KEY (prompt_id) REFERENCES prompts(prompt_id) ON DELETE CASCADE,
+                                          CONSTRAINT fk_pt_tag
+                                              FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+    COMMENT='프롬프트-태그 매핑 테이블';

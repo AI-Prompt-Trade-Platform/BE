@@ -6,6 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PromptReviewRequestDto {
+    private Integer userId;
+    private Long promptId;
     private Double rate;
     private String reviewContent;
 }

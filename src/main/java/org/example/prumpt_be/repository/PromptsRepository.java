@@ -1,6 +1,7 @@
 package org.example.prumpt_be.repository;
 
 import org.example.prumpt_be.dto.entity.Prompt;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.dto.response.PromptDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PromptsRepository extends JpaRepository<Prompt, Long> {
@@ -42,4 +44,16 @@ public interface PromptsRepository extends JpaRepository<Prompt, Long> {
         WHERE p.ownerID.userId = :userId
     """)
     List<PromptDto> findAllByOwnerId(@Param("userId") Integer userId);
+
+
+    @Query("""
+        SELECT p.ownerID.userId
+          FROM Prompt p
+         WHERE p.promptId   = :promptId
+           AND p.ownerID.auth0Id = :auth0Id
+    """)
+    Optional<Users> findOwnerUserIdByPromptIdAndOwnerAuth0Id(
+            @Param("promptId") Long promptId,
+            @Param("auth0Id")  String auth0Id
+    );
 }

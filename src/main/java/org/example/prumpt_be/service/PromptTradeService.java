@@ -18,29 +18,30 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class PromptTradeService {
 
-    private final PromptRepository promptRepository;
+    private final PromptsRepository promptsRepository;
     private final PromptPurchaseRepository purchaseRepository;
     private final UserRepository userRepository;
     private final UserSalesSummaryRepository summaryRepository;
 
     @Transactional
-    public void purchasePrompt(Integer promptId, Integer buyerId) {
-        Prompt prompt = promptRepository.findById(Long.valueOf(promptId))
+    public void purchasePrompt(Integer promptId, String buyerId) {
+        Prompt prompt = promptsRepository.findById(Long.valueOf(promptId))
                 .orElseThrow(() -> new RuntimeException("프롬프트가 존재하지 않습니다"));
 
-        Users buyer = userRepository.findById(Long.valueOf(buyerId))
+        Users buyer = userRepository.findById(buyerId)
                 .orElseThrow(() -> new RuntimeException("구매자 정보 없음"));
 
-        if (Objects.equals(prompt.getOwnerID().getUserID(), buyerId)) {
+        if (Objects.equals(prompt.getOwnerID().getUserId(), buyerId)) {
             throw new RuntimeException("자기 자신의 프롬프트는 구매할 수 없습니다");
         }
 
         // 구매한 프롬프트 확인 todo: FE에서 구매버튼 비활성화 처리 필요
-        if (purchaseRepository.existsByBuyerIdAndPromptId(buyerId, promptId)) {
+        if (purchaseRepository.existsByBuyerAndPrompt(buyer, prompt)) {
             throw new RuntimeException("이미 구매한 프롬프트입니다");
         }
 
-        Users seller = userRepository.findById(Long.valueOf(prompt.getOwnerID().getUserID()))
+        // 판매자 정보 조회
+        Users seller = promptsRepository.findOwnerUserIdByPromptIdAndOwnerAuth0Id(prompt.getPromptId(), buyerId)
                 .orElseThrow(() -> new RuntimeException("판매자 정보 없음"));
 
         int price = prompt.getPrice();
@@ -56,18 +57,28 @@ public class PromptTradeService {
 
         // 구매 이력 저장
         PromptPurchase purchase = new PromptPurchase();
-        purchase.setPromptId(promptId);
-        purchase.setBuyerId(buyerId);
+        purchase.setPrompt(prompt);
+        purchase.setBuyer(buyer);
         purchase.setPurchasedAt(LocalDateTime.now());
         purchaseRepository.save(purchase);
 
         // 판매 요약 업데이트
-        UserSalesSummary summary = summaryRepository.findByUserIdAndSummaryDate(seller.getUserID(), LocalDate.now())
-                .orElseGet(() -> new UserSalesSummary(seller.getUserID(), LocalDate.now()));
+        UserSalesSummary summary = summaryRepository.findByUserIDAndSummaryDate(seller.getUserId(), LocalDate.now())
+                .orElse(null);;
 
-        summary.setSoldCount(summary.getSoldCount() + 1);
-        summary.setTotalRevenue(summary.getTotalRevenue().add(BigDecimal.valueOf(price)));
-        summary.setLastUpdated(LocalDateTime.now());
+        if (summary == null) {
+            // 새로운 요약 생성
+            summary = new UserSalesSummary();
+            summary.setUserID(seller);  // Users 객체
+            summary.setSummaryDate(LocalDate.now());
+            summary.setSoldCount(1);    // 첫 판매
+            summary.setTotalRevenue(BigDecimal.valueOf(price));
+        } else {
+            // 기존 요약 업데이트
+            summary.setSoldCount(summary.getSoldCount() + 1);
+            summary.setTotalRevenue(summary.getTotalRevenue().add(BigDecimal.valueOf(price)));
+        }
+// lastUpdated는 @UpdateTimestamp로 자동 처리됨
 
         summaryRepository.save(summary);
     }

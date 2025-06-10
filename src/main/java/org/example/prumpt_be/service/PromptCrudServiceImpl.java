@@ -1,8 +1,11 @@
 package org.example.prumpt_be.service;
 
+import org.example.prumpt_be.dto.PromptDetailDTO;
 import org.example.prumpt_be.dto.entity.*;
 import org.example.prumpt_be.dto.request.PromptCreateRequestDto;
 import org.example.prumpt_be.dto.request.PromptUpdateRequestDto;
+import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
+import org.example.prumpt_be.dto.response.ClassificationDTO;
 import org.example.prumpt_be.dto.response.PromptSummaryDto; // 또는 상세 DTO 사용 가능
 import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,8 @@ public class PromptCrudServiceImpl implements PromptCrudService {
     private final UserRepository userRepository;
     private final ModelCategoryRepository modelCategoryRepository;
     private final TypeCategoryRepository typeCategoryRepository;
+    private final HomePageServiceImpl homePageService;
+    private final AInspectionService inspectionService;
     private final PromptClassificationRepository promptClassificationRepository; // 수정 시 기존 분류 삭제 등에 사용
 
     /**
@@ -52,15 +57,10 @@ public class PromptCrudServiceImpl implements PromptCrudService {
                 .ownerID(owner)
                 // aiInspectionRate는 초기에는 null이거나 기본값, 또는 별도 검수 프로세스를 통해 설정될 수 있습니다.
                 // createdAt, updatedAt은 @CreationTimestamp, @UpdateTimestamp에 의해 자동 관리됩니다.
-                .classifications(new ArrayList<>()) // ★ classifications 리스트 초기화
+//                .classifications(new ArrayList<>()) // ★ classifications 리스트 초기화
                 .build();
 
-        // 카테고리 매핑 처리
-        // DTO의 modelCategoryIds와 typeCategoryIds를 어떻게 조합할지는 정책에 따라 달라질 수 있습니다.
-        // 예시: modelCategoryIds의 각 ID와 typeCategoryIds의 각 ID를 조합하여 여러 PromptClassification을 만들거나,
-        //       하나의 modelCategoryId에 여러 typeCategoryId를 매칭하거나 등.
-        // 현재는 가장 간단한 형태인, DTO에 전달된 첫 번째 modelCategoryId와 첫 번째 typeCategoryId만 사용한다고 가정합니다.
-        // 만약 여러 조합을 저장해야 한다면 이 부분을 반복문 등으로 수정해야 합니다.
+        // PromptClassification 엔티티 생성 및 Prompt와 연관 설정
         if (createRequestDto.getModelCategoryIds() != null && !createRequestDto.getModelCategoryIds().isEmpty() &&
                 createRequestDto.getTypeCategoryIds() != null && !createRequestDto.getTypeCategoryIds().isEmpty()) {
 
@@ -80,13 +80,15 @@ public class PromptCrudServiceImpl implements PromptCrudService {
                     .typeCategory(typeCategory)
                     .build();
 
-            prompt.getClassifications().add(classification); // ★ Prompt 객체의 컬렉션에 추가
+            prompt.setClassifications(classification); // ★ Prompt 객체의 컬렉션에 추가
         }
 
         // Prompt 엔티티 저장 시, CascadeType.ALL (또는 PERSIST) 설정에 의해
         // prompt.classifications 리스트에 포함된 PromptClassification 객체들도 함께 저장됩니다.
         Prompt savedPrompt = promptRepository.save(prompt);
 
+        PromptUploadRequestDto uploadRequest = PromptUploadRequestDto.fromEntity(savedPrompt);
+        inspectionService.handlePromptUploadAndEvaluation(uploadRequest);
         return convertToPromptSummaryDto(savedPrompt);
     }
 
@@ -99,24 +101,19 @@ public class PromptCrudServiceImpl implements PromptCrudService {
      */
     @Override
     @Transactional(readOnly = true)
-    public PromptSummaryDto getPromptDetails(Long promptId) {
+    public PromptDetailDTO getPromptDetails(Long promptId) {
+//        ClassificationDTO catDto = new ClassificationDTO(
+//                promptClassification.getModelCategory().getModelName(),
+//                promptClassification.getTypeCategory().getTypeName()
+//        );
+
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new RuntimeException("프롬프트를 찾을 수 없습니다. ID: " + promptId));
         // 필요하다면 PromptSummaryDto 대신 더 상세한 정보를 담는 DTO를 만들어 반환할 수 있습니다.
-        return convertToPromptSummaryDto(prompt);
+        return convertToPromptDetailDTO(prompt);
     }
 
-    /**
-     * 특정 프롬프트의 정보를 수정합니다.
-     * 프롬프트 소유자만 수정할 수 있도록 인증 로직이 필요합니다 (현재는 auth0Id로 소유자 확인).
-     * 카테고리 정보도 함께 수정합니다 (기존 분류 삭제 후 새로 추가하는 방식).
-     *
-     * @param auth0Id 현재 인증된 사용자의 Auth0 ID (프롬프트 소유자 확인용)
-     * @param promptId 수정할 프롬프트의 ID
-     * @param updateRequestDto 프롬프트 수정에 필요한 데이터
-     * @return 수정된 프롬프트의 요약 정보 DTO
-     * @throws RuntimeException 관련 엔티티를 찾을 수 없거나, 수정 권한이 없는 경우 발생
-     */
+    // 프롬프트 업데이트
     @Override
     @Transactional
     public PromptSummaryDto updatePrompt(
@@ -144,7 +141,9 @@ public class PromptCrudServiceImpl implements PromptCrudService {
         // updatedAt 은 @UpdateTimestamp 자동 반영
 
         // 2) classifications 전부 지우기 → orphanRemoval로 DB에서도 삭제됨
-        prompt.getClassifications().clear();
+//        prompt.getClassifications().clear();
+//        promptClassificationRepository.deleteByPrompt_PromptId(promptId);
+        prompt.setClassifications(null);
 
         // 3) 새 PromptClassification 추가
         for (Integer modelCatId : dto.getModelCategoryIds()) {
@@ -159,7 +158,7 @@ public class PromptCrudServiceImpl implements PromptCrudService {
                         .modelCategory(mc)
                         .typeCategory(tc)
                         .build();
-                prompt.getClassifications().add(pc);
+                prompt.setClassifications(pc);
             }
         }
 
@@ -190,7 +189,7 @@ public class PromptCrudServiceImpl implements PromptCrudService {
                 .orElseThrow(() -> new RuntimeException("삭제할 프롬프트를 찾을 수 없습니다. ID: " + promptId));
 
         // 프롬프트 소유자 확인
-        if (promptToDelete.getOwnerID().getUserId() != (currentUser.getUserId())) {
+        if (!Objects.equals(promptToDelete.getOwnerID().getUserId(), currentUser.getUserId())) {
             throw new RuntimeException("이 프롬프트를 삭제할 권한이 없습니다.");
         }
 
@@ -209,5 +208,12 @@ public class PromptCrudServiceImpl implements PromptCrudService {
             return null;
         }
         return HomePageServiceImpl.getPromptSummaryDto(prompt);
+    }
+
+    private PromptDetailDTO convertToPromptDetailDTO(Prompt prompt) {
+        if (prompt == null) {
+            return null;
+        }
+        return homePageService.getPromptDetailDto(prompt);
     }
 }

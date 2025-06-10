@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "prompt_purchases",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"buyer_id", "prompt_id"},
+       uniqueConstraints = @UniqueConstraint(columnNames = {"buyer_id", "prompt_id"}),
        indexes = {
         @Index(name = "idx_purchases_buyer_id", columnList = "buyer_id"),
         @Index(name = "idx_purchases_prompt_id", columnList = "prompt_id"),
@@ -25,7 +25,7 @@ public class PromptPurchase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "purchase_id")
-    private Interger purchaseId; // 스키마는 INT지만 Long 사용 권장
+    private Integer purchaseId; // 스키마는 INT지만 Long 사용 권장
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_id", nullable = false)

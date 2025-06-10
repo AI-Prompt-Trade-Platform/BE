@@ -1,12 +1,17 @@
 package org.example.prumpt_be.service;
 
+import org.example.prumpt_be.dto.PromptDetailDTO;
+import org.example.prumpt_be.dto.entity.ModelCategory;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.response.PageResponseDto;
 import org.example.prumpt_be.dto.response.PromptSummaryDto;
+import org.example.prumpt_be.repository.PromptClassificationRepository;
 import org.example.prumpt_be.repository.PromptRepository;
+import org.example.prumpt_be.repository.PromptReviewsRepository;
 import org.example.prumpt_be.service.HomePageService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils; // StringUtils 임포트
@@ -23,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 public class HomePageServiceImpl implements HomePageService {
 
     private final PromptRepository promptRepository;
+    private final PromptClassificationRepository promptClassificationRepository;
+    private final PromptReviewsRepository promptReviewsRepository;
 
     @Override
     public PageResponseDto<PromptSummaryDto> getPopularPrompts(Pageable pageable) {
@@ -86,6 +93,26 @@ public class HomePageServiceImpl implements HomePageService {
                 .thumbnailImageUrl(prompt.getExampleContentUrl())
                 .aiInspectionRate(prompt.getAiInspectionRate())
                 .createdAt(prompt.getCreatedAt())
+                .build();
+    }
+
+    public PromptDetailDTO getPromptDetailDto(Prompt prompt) {
+        String ownerName = (prompt.getOwnerID() != null && prompt.getOwnerID().getProfileName() != null)
+                ? prompt.getOwnerID().getProfileName()
+                : "Unknown";
+
+        return PromptDetailDTO.builder()
+                .id(prompt.getPromptId())
+                .title(prompt.getPromptName())
+                .description(prompt.getDescription())
+                .content(prompt.getPromptContent())
+                .price(prompt.getPrice() != null ? prompt.getPrice() : 0)
+                .ownerProfileName(ownerName)
+                .categories(promptClassificationRepository.findDtoByPromptId(prompt.getPromptId()))
+                .thumbnailImageUrl(prompt.getExampleContentUrl())
+                .aiInspectionRate(prompt.getAiInspectionRate())
+                .createdAt(prompt.getCreatedAt())
+                .reviews(promptReviewsRepository.findAllByPromptIdAsDTO(prompt.getPromptId()))
                 .build();
     }
 }

@@ -22,8 +22,8 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserProfileDto getUserProfile(Long userId) {
-        Users user = userRepository.findById(userId)
+    public UserProfileDto getUserProfile(Integer userId) {
+        Users user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId)); // TODO: 적절한 예외 클래스 사용
         return convertToUserProfileDto(user);
     }

@@ -1,94 +1,89 @@
--- users
+-- Users
 INSERT IGNORE INTO users (
-    user_id,
-    auth0_id,
-    point,
-    profile_name,
-    introduction,
-    profile_img_url,
-    banner_img_url,
-    user_role,
-    created_at,
-    updated_at
+    auth0_id, point, profile_name, introduction,
+    profile_img_url, banner_img_url, user_role,
+    created_at, updated_at
 ) VALUES
-      (1, 'auth0|user001',5000, 'Alice', 'AI 아티스트입니다.', 'https://img.example.com/profile1.jpg', 'https://img.example.com/banner1.jpg', 'creator', NOW(), NOW()),
-      (2, 'auth0|user002', 2000, 'Bob',   '프롬프트 수집러입니다.',      'https://img.example.com/profile2.jpg', 'https://img.example.com/banner2.jpg', 'buyer',   NOW(), NOW());
+      ('auth0|user1',   0, 'Alice', 'Hello, I am Alice',
+       '/images/alice.png', '/banners/alice_banner.png', 'USER',
+       '2025-06-01 10:00:00', '2025-06-01 10:00:00'),
+      ('auth0|user2', 100, 'Bob',   'Hi, Bob here.',
+       '/images/bob.png',   '/banners/bob_banner.png',   'USER',
+       '2025-06-02 11:00:00', '2025-06-02 11:00:00');
 
--- model_categories
-INSERT IGNORE INTO model_categories (
-    model_name,
-    model_slug
-) VALUES
-      ('ChatGPT',     'chatgpt'),
-      ('Midjourney',  'midjourney');
+-- Model categories
+INSERT IGNORE INTO model_categories (model_name, model_slug) VALUES
+                                                          ('GPT-4', 'gpt-4'),
+                                                          ('BERT',  'bert');
 
--- type_categories
-INSERT IGNORE INTO type_categories (
-    type_name,
-    type_slug
-) VALUES
-      ('이미지 생성',      'image-generation'),
-      ('대화형 AI',        'conversational-ai');
+-- Type categories
+INSERT IGNORE INTO type_categories (type_name, type_slug) VALUES
+                                                       ('Text Generation',  'text-gen'),
+                                                       ('Image Generation', 'image-gen');
 
--- prompts
+-- Tags
+INSERT IGNORE INTO tags (name) VALUES
+                            ('summary'),
+                            ('text'),
+                            ('image');
+
+-- Prompts
 INSERT IGNORE INTO prompts (
-    prompt_name,
-    prompt_content,
-    price,
-    ai_inspection_rate,
-    owner_id,
-    example_content_url,
-    created_at,
-    updated_at
+    prompt_name, prompt_content, price,
+    ai_inspection_rate, example_content_url,
+    description, model, owner_id,
+    created_at, updated_at
 ) VALUES
-      ('명화 스타일 초상화 프롬프트', '당신의 사진을 반 고흐 스타일로 변환합니다.',     1000, 'A', 1, 'https://example.com/example1.jpg', NOW(), NOW()),
-      ('비즈니스 회의 요약 프롬프트', '회의 내용을 요약해주는 AI 프롬프트',               1500, 'B', 1, 'https://example.com/example2.txt', NOW(), NOW());
+      ('Summarize Text',
+       'Summarize any text into concise bullet points.',
+       10, 'A',
+       'http://example.com/sample1',
+       'Short summary tool',
+       '{"model":"gpt-4"}',
+       1,
+       '2025-06-05 09:00:00', '2025-06-05 09:00:00'
+      ),
+      ('Generate Image',
+       'Create an image based on a text prompt.',
+       20, 'B',
+       'http://example.com/sample2',
+       'AI image creator',
+       '{"model":"dall-e"}',
+       1,
+       '2025-06-06 10:00:00', '2025-06-06 10:00:00'
+      );
 
--- prompt_classifications
-INSERT IGNORE INTO prompt_classifications (
-    prompt_id,
-    model_id,
-    type_id
-) VALUES
-      (1, 2, 1),  -- Midjourney, 이미지 생성
-      (2, 1, 2);  -- ChatGPT, 대화형 AI
+-- Prompt classifications
+INSERT IGNORE INTO prompt_classifications (prompt_id, model_id, type_id) VALUES
+                                                                      (1, 1, 1),
+                                                                      (2, 2, 2);
 
--- prompt_purchases
-INSERT IGNORE INTO prompt_purchases (
-    buyer_id,
-    prompt_id,
-    purchased_at
-) VALUES
-      (2, 1, NOW()),
-      (2, 2, NOW());
+-- Prompt–Tag associations
+INSERT IGNORE INTO prompt_tag (prompt_id, tag_id) VALUES
+                                               (1, 1),  -- 'Summarize Text' ↔ 'summary'
+                                               (1, 2),  -- 'Summarize Text' ↔ 'text'
+                                               (2, 3);  -- 'Generate Image'  ↔ 'image'
 
--- user_sales_summary
+-- Prompt purchases
+INSERT IGNORE INTO prompt_purchases (buyer_id, prompt_id, purchased_at) VALUES
+    (2, 1, '2025-06-07 14:00:00'),
+    (7, 2, '2025-06-07 15:00:00');
+
+-- User sales summary
 INSERT IGNORE INTO user_sales_summary (
-    user_id,
-    summary_date,
-    sold_count,
-    total_revenue,
-    last_updated
+    user_id, summary_date, sold_count,
+    total_revenue, last_updated
 ) VALUES
-    (1, CURDATE(), 2, 2500.00, NOW());
+      (1, '2025-06-07', 1, 10.00, '2025-06-07 15:00:00'),
+      (1, '2025-06-08', 0,  0.00, '2025-06-08 15:00:00');
 
--- user_wishlist
-INSERT IGNORE INTO user_wishlist (
-    user_id,
-    prompt_id,
-    added_at
-) VALUES
-    (2, 1, NOW());
+-- User wishlist
+INSERT IGNORE INTO user_wishlist (user_id, prompt_id, added_at) VALUES
+    (2, 2, '2025-06-07 16:00:00');
 
--- prompt_reviews
+-- Prompt reviews
 INSERT IGNORE INTO prompt_reviews (
-    purchase_id,
-    prompt_id,
-    reviewer_id,
-    rate,
-    review_content,
-    reviewed_at,
-    updated_at
+    purchase_id, prompt_id, reviewer_id,
+    rate, review_content, reviewed_at, updated_at
 ) VALUES
-      (1, 1, 2, 4.5, '멋진 결과물이에요! 추천합니다.', NOW(), NOW()),
-      (2, 2, 2, 5.0, '정말 유용합니다. 감사합니다.', NOW(), NOW());
+    (1, 1, 2, 4.5, 'Great summary!', '2025-06-07 15:30:00', '2025-06-07 15:30:00');

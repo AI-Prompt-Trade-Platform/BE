@@ -55,7 +55,7 @@ public class UserSalesSummaryScheduler {
                     : BigDecimal.ZERO;
 
             // 5. 사용자의 수익 요약 레코드가 있으면 로드, 없으면 새로 생성
-            UserSalesSummary profit = profitRepo.findByUserID(userId)
+            UserSalesSummary profit = profitRepo.findByUserIDAndSummaryDate(userId, LocalDate.now())
                     .orElseGet(() -> {
                         UserSalesSummary dto = new UserSalesSummary();
                         dto.setUserID(user);

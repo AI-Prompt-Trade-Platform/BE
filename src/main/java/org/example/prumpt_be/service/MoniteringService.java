@@ -31,7 +31,7 @@ public class MoniteringService {
     }
 
     // Auth0 ID(sub)로 사용자 조회 (Auth0ID => UserId 로 변경 용도)
-    public int getUserIdByAuth0Id(String auth0_id) {
+    public Integer getUserIdByAuth0Id(String auth0_id) {
         return usersRepository.findByAuth0Id(auth0_id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."))
                 .getUserId();

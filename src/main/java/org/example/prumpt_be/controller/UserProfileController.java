@@ -51,7 +51,7 @@ public class UserProfileController {
     @Operation(summary = "특정 사용자 프로필 조회 (공개용)", description = "ID로 특정 사용자의 프로필 정보를 조회합니다 (공개 가능한 정보만).")
     @GetMapping("/{userId}/profile")
     public ResponseEntity<UserProfileDto> getUserProfile(
-            @Parameter(description = "조회할 사용자의 ID") @PathVariable Long userId) {
+            @Parameter(description = "조회할 사용자의 ID") @PathVariable Integer userId) {
         UserProfileDto userProfile = userProfileService.getUserProfile(userId);
         return ResponseEntity.ok(userProfile);
     }

@@ -11,7 +11,7 @@ import jakarta.persistence.Embeddable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode // 복합키 클래스는 equals와 hashCode 구현 필수
+//@EqualsAndHashCode // 복합키 클래스는 equals와 hashCode 구현 필수
 public class PromptClassificationId implements Serializable {
     private Long prompt;
     private Integer modelCategory;

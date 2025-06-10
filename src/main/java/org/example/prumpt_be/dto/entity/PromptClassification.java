@@ -1,5 +1,6 @@
 package org.example.prumpt_be.dto.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import java.io.Serializable;
@@ -21,6 +22,7 @@ public class PromptClassification {
     @OneToOne(fetch = FetchType.LAZY)
 
     @JoinColumn(name = "prompt_id", referencedColumnName = "prompt_id")
+    @JsonBackReference          // 역참조는 무시
     private Prompt prompt;
 
     @Id

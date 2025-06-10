@@ -1,5 +1,6 @@
 package org.example.prumpt_be.controller;
 
+import org.example.prumpt_be.dto.PromptDetailDTO;
 import org.example.prumpt_be.dto.request.PromptCreateRequestDto;
 import org.example.prumpt_be.dto.request.PromptUpdateRequestDto;
 import org.example.prumpt_be.dto.response.PromptSummaryDto; // 상세 DTO 사용 고려
@@ -46,10 +47,10 @@ public class PromptCrudController {
 
     @Operation(summary = "프롬프트 상세 조회", description = "특정 프롬프트의 상세 정보를 조회합니다.")
     @GetMapping("/{promptId}")
-    public ResponseEntity<PromptSummaryDto> getPromptDetails( // 상세 DTO로 변경 고려
+    public ResponseEntity<PromptDetailDTO> getPromptDetails( // 상세 DTO로 변경 고려
             @Parameter(description = "조회할 프롬프트의 ID")
             @PathVariable Long promptId) {
-        PromptSummaryDto promptDetails = promptCrudServiceImpl.getPromptDetails(promptId);
+        PromptDetailDTO promptDetails = promptCrudServiceImpl.getPromptDetails(promptId);
         return ResponseEntity.ok(promptDetails);
     }
 

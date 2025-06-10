@@ -8,12 +8,15 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.Principal;
 import java.util.Base64;
 
 @Slf4j
@@ -26,8 +29,13 @@ public class PaymentWidgetController {
     @Value("${toss.secret-key}")
     private String tossSecretKey;
 
+    // 결제 요청을 처리하는 메서드
     @PostMapping("/confirm")
-    public ResponseEntity<?> confirmPayment(@RequestBody String jsonBody) throws Exception {
+    public ResponseEntity<?> confirmPayment(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody String jsonBody) throws Exception {
+        // JWT에서 사용자 ID 추출
+        String userAuth0Id = jwt.getSubject();
         JSONParser parser = new JSONParser();
         JSONObject result;
         String orderId;
@@ -76,7 +84,7 @@ public class PaymentWidgetController {
 
         if (responseCode == 200) {
             // 결제 성공 시 구매 처리
-            promptTradeService.purchasePrompt(promptId, buyerId);
+            promptTradeService.purchasePrompt(promptId, userAuth0Id);
 
             JSONObject success = new JSONObject();
             success.put("message", "결제 및 프롬프트 구매 성공");

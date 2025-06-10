@@ -13,7 +13,7 @@ public interface UserProfileService {
      * @param userId 조회할 사용자 ID
      * @return 사용자 프로필 정보 DTO
      */
-    UserProfileDto getUserProfile(Long userId);
+    UserProfileDto getUserProfile(Integer userId);
 
     /**
      * 현재 인증된 사용자의 프로필 정보를 조회합니다.

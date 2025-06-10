@@ -2,11 +2,20 @@ package org.example.prumpt_be.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
-@AllArgsConstructor
+@Getter
+@Setter
 public class ReviewDTO {
     private String username;
-    private int rating;
+    private Double rating;
     private String content;
+
+    public ReviewDTO(String username, Double rating, String content) {
+        this.username = username;
+        this.rating   = rating;
+        this.content  = content;
+    }
 }

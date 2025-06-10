@@ -1,10 +1,12 @@
 package org.example.prumpt_be.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.prumpt_be.dto.request.PromptReviewRequestDTO;
-import org.example.prumpt_be.dto.entity.PromptReview;
+import org.example.prumpt_be.dto.ReviewDTO;
+import org.example.prumpt_be.dto.request.PromptReviewRequestDto;
 import org.example.prumpt_be.service.PromptReviewService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,31 +20,44 @@ public class PromptReviewController {
 
     // 프롬프트 리뷰 등록
     @PostMapping
-    public ResponseEntity<Void> createReview(@RequestBody PromptReviewRequestDTO request) { //todo: 유저 ID 검증 메커니즘 필요
-        reviewService.createReview(request);
+    public ResponseEntity<Void> createReview(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody PromptReviewRequestDto request) { //todo: 유저 ID 검증 메커니즘 필요(PromptReviewRequestDto 수정해야함)
+
+        // JWT로 유저 ID 조회
+        String userAuth0Id = jwt.getSubject();
+        reviewService.createReview(userAuth0Id, request);
         return ResponseEntity.ok().build();
     }
 
     // 프롬프트 리뷰 조회
     @GetMapping("/{promptId}")
-    public ResponseEntity<List<PromptReview>> getReviews(@PathVariable Long promptId) {
+    public ResponseEntity<List<ReviewDTO>> getReviews(
+            @PathVariable Long promptId) {
         return ResponseEntity.ok(reviewService.getReviewsByPromptId(promptId));
     }
 
     // 프롬프트 리뷰 수정
     @PutMapping("/{reviewId}")
-    public ResponseEntity<Void> updateReview( //todo: 유저 ID 검증 메커니즘 필요
+    public ResponseEntity<Void> updateReview( //todo: 근데 리뷰ID를 FE에서 어떻게 처리?
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long reviewId,
-            @RequestBody PromptReviewRequestDTO request
+            @RequestBody PromptReviewRequestDto request
     ) {
-        reviewService.updateReview(reviewId, request);
+        // JWT로 유저 ID 조회
+        String userAuth0Id = jwt.getSubject();
+        reviewService.updateReview(userAuth0Id, reviewId, request);
         return ResponseEntity.ok().build();
     }
 
     // 프롬프트 리뷰 삭제
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long reviewId) { //todo: 유저 ID 검증 메커니즘 필요
-        reviewService.deleteReview(reviewId);
+    public ResponseEntity<Void> deleteReview(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable Long reviewId) {
+        // JWT로 유저 ID 조회
+        String userAuth0Id = jwt.getSubject();
+        reviewService.deleteReview(userAuth0Id, reviewId);
         return ResponseEntity.noContent().build();
     }
 
