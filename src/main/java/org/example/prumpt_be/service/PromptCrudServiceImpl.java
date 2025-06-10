@@ -5,15 +5,12 @@ import org.example.prumpt_be.dto.entity.*;
 import org.example.prumpt_be.dto.request.PromptCreateRequestDto;
 import org.example.prumpt_be.dto.request.PromptUpdateRequestDto;
 import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
-import org.example.prumpt_be.dto.response.ClassificationDTO;
 import org.example.prumpt_be.dto.response.PromptSummaryDto; // 또는 상세 DTO 사용 가능
 import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-
 // import java.time.LocalDateTime; // @UpdateTimestamp 사용 시 직접 설정 불필요
-import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -31,7 +28,6 @@ public class PromptCrudServiceImpl implements PromptCrudService {
     private final TypeCategoryRepository typeCategoryRepository;
     private final HomePageServiceImpl homePageService;
     private final AInspectionService inspectionService;
-    private final PromptClassificationRepository promptClassificationRepository; // 수정 시 기존 분류 삭제 등에 사용
 
     /**
      * 새로운 프롬프트를 생성하고 데이터베이스에 저장합니다.

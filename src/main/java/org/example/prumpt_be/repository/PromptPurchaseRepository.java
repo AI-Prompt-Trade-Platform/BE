@@ -3,11 +3,9 @@ package org.example.prumpt_be.repository;
 import org.example.prumpt_be.dto.entity.PromptPurchase;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.example.prumpt_be.dto.entity.Prompt;
-import org.example.prumpt_be.dto.entity.PromptPurchase;
 import org.example.prumpt_be.dto.entity.Users;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

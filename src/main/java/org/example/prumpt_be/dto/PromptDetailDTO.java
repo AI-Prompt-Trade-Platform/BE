@@ -1,7 +1,6 @@
 package org.example.prumpt_be.dto;
 
 import lombok.*;
-import org.example.prumpt_be.dto.entity.PromptClassification;
 import org.example.prumpt_be.dto.response.ClassificationDTO;
 
 import java.time.LocalDateTime;

@@ -3,7 +3,6 @@ package org.example.prumpt_be.service;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
 import org.example.prumpt_be.repository.PromptsRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 
@@ -31,7 +30,7 @@ public class AInspectionService {
 
         // 2. 어떤 프롬프트인지 조회 (DB저장 이후)
         Long promptId = request.getPromptId();
-        Prompt prompt = promptsRepository.findById((long) promptId)
+        Prompt prompt = promptsRepository.findById(promptId)
                 .orElseThrow(() -> new IllegalArgumentException("Prompt not found with id: " + promptId));
 
         // 3. AI 평가 요청
@@ -105,7 +104,6 @@ public class AInspectionService {
                           - **구도/레이아웃 일치도**: 요청된 화면 구성, 앵글, 비율, 배치가 예시와 얼마나 일치하는지
                           - **스타일/분위기 일치도**: 지시한 예술 스타일, 무드, 톤, 질감이 예시 이미지에 얼마나 반영되었는지
                           - **디테일 완성도**: 세부 묘사, 해상도, 품질 등 이미지의 전반적 완성도
-                          
                           - **등급 정의**
                             - S: 시각적 요소, 구도, 스타일, 디테일 모든 면에서 프롬프트 요구사항과 거의 완벽하게 일치
                             - A: 대부분의 요구사항을 충족하나, 한두 가지 측면에서 매우 사소한 차이나 아쉬움
@@ -113,7 +111,7 @@ public class AInspectionService {
                             - C: 기본 주제는 맞으나 여러 시각적 측면에서 프롬프트 의도와 상당한 차이
                             - D: 주요 객체나 테마조차 맞지 않거나 이미지 품질이 현저히 낮음
                         
-                        4. 등급은 오직 하나만 선택. 
+                        4. 등급은 오직 하나만 선택.
                            반드시 아래 응답 포맷을 지켜줘.
                         
                         5. **응답 포맷:** 
@@ -141,7 +139,6 @@ public class AInspectionService {
                           - **시퀀스/스토리 일치도**: 요청된 영상 흐름, 장면 전환, 서사 구조가 예시와 얼마나 일치하는지
                           - **영상 스타일 일치도**: 지시한 촬영 기법, 시각적 톤, 색감, 화면 구성이 예시 영상에 얼마나 반영되었는지
                           - **기술적 완성도**: 영상 품질, 움직임 자연스러움, 연결성 등 영상의 전반적 완성도
-                         
                           - **등급 정의**
                             - S: 영상 내용, 시퀀스, 스타일, 기술적 완성도 모든 면에서 프롬프트 요구사항과 거의 완벽하게 일치
                             - A: 대부분의 요구사항을 충족하나, 한두 가지 측면에서 매우 사소한 차이나 아쉬움
@@ -149,10 +146,10 @@ public class AInspectionService {
                             - C: 기본 장면은 맞으나 여러 측면에서 프롬프트 의도와 상당한 차이
                             - D: 주요 장면이나 액션조차 맞지 않거나 영상 품질이 현저히 낮음
                         
-                        4. 등급은 오직 하나만 선택. 
+                        4. 등급은 오직 하나만 선택.
                            반드시 아래 응답 포맷을 지켜줘.
                         
-                        5. **응답 포맷:** 
+                        5. **응답 포맷:**
                            `[등급알파벳] (띄어쓰기) [아주 짧게 이 등급을 준 이유를 한 문장으로 설명]` 
                            예시: `A 장면과 액션은 완벽하나 색감이 약간 다름`
                         

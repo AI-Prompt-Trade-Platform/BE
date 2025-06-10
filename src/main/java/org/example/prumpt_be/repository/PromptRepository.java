@@ -1,5 +1,4 @@
 package org.example.prumpt_be.repository;
-import org.springframework.data.jpa.repository.EntityGraph;
 import java.util.List;
 import java.util.Optional;
 import org.example.prumpt_be.dto.entity.Prompt;

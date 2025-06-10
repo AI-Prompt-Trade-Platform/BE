@@ -3,7 +3,7 @@ package org.example.prumpt_be.dto.response;
 import lombok.Builder;
 import lombok.Getter;
 import java.time.LocalDateTime;
-import java.util.List;
+
 
 @Getter
 @Builder

@@ -1,17 +1,14 @@
 package org.example.prumpt_be.service;
 
 import org.example.prumpt_be.dto.PromptDetailDTO;
-import org.example.prumpt_be.dto.entity.ModelCategory;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.response.PageResponseDto;
 import org.example.prumpt_be.dto.response.PromptSummaryDto;
 import org.example.prumpt_be.repository.PromptClassificationRepository;
 import org.example.prumpt_be.repository.PromptRepository;
 import org.example.prumpt_be.repository.PromptReviewsRepository;
-import org.example.prumpt_be.service.HomePageService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils; // StringUtils 임포트

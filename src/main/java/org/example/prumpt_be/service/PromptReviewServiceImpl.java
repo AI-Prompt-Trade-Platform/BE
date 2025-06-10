@@ -9,8 +9,6 @@ import org.example.prumpt_be.dto.request.PromptReviewRequestDto;
 import org.example.prumpt_be.dto.entity.PromptReview;
 import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,7 +17,6 @@ import java.util.List;
 public class PromptReviewServiceImpl implements PromptReviewService {
 
     private final PromptReviewsRepository reviewsRepository;
-    private final UserRepository userRepository;
     private final PromptRepository promptRepository;
     private final UsersRepository usersRepository;
     private final PromptPurchaseRepository purchaseRepository;

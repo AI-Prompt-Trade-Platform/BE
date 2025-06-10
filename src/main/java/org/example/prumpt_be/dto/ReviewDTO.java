@@ -1,6 +1,5 @@
 package org.example.prumpt_be.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
