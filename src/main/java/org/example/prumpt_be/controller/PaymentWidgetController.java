@@ -1,5 +1,6 @@
 package org.example.prumpt_be.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.prumpt_be.service.PromptTradeService;
@@ -29,6 +30,7 @@ public class PaymentWidgetController {
     private String tossSecretKey;
 
     // 결제 요청을 처리하는 메서드
+    @Operation(summary = "결제요청 처리", description = "auth0Id 를 받아 결제 처리.")
     @PostMapping("/confirm")
     public ResponseEntity<?> confirmPayment(
             @AuthenticationPrincipal Jwt jwt,

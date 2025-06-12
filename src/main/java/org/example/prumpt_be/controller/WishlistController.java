@@ -22,17 +22,15 @@ import lombok.RequiredArgsConstructor;
  * todo: 위시리스트 기능 컨트롤러 (필수)
  */
 @RestController
-@RequestMapping("/api/users/me/wishlist") // 기본 경로를 /api/users/me/wishlist 로 설정
+@RequestMapping("/api/wishlist") // 기본 경로를 /api/users/me/wishlist 로 설정
 @RequiredArgsConstructor
 @Tag(name = "Wishlist", description = "사용자 위시리스트 관련 API")
 public class WishlistController {
 
     private final WishlistService wishlistService;
-
-    // 임시로 Auth0 ID를 헤더에서 받는다고 가정 (UserProfileController와 동일)
-    private static final String AUTH0_ID_HEADER = "X-Auth0-Id";
     private final WishlistServiceImpl wishlistServiceImpl;
 
+    //todo: 추가/삭제 토글로 구현 필요
     @Operation(summary = "위시리스트에 프롬프트 추가", description = "현재 사용자의 위시리스트에 특정 프롬프트를 추가합니다.")
     @PostMapping("/{promptId}") // 경로 변수로 promptId를 받음
     public ResponseEntity<Void> addPromptToWishlist(
@@ -72,6 +70,7 @@ public class WishlistController {
         return ResponseEntity.ok(wishlist);
     }
 
+    // 필요한가?
     @Operation(summary = "프롬프트 위시리스트 포함 여부 확인", description = "현재 사용자의 위시리스트에 특정 프롬프트가 포함되어 있는지 확인합니다.")
     @GetMapping("/{promptId}/exists")
     public ResponseEntity<Boolean> isPromptInWishlist(

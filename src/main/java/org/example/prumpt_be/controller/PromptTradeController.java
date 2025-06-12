@@ -1,5 +1,6 @@
 package org.example.prumpt_be.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.example.prumpt_be.dto.request.PromptPurchaseRequest;
 import org.example.prumpt_be.service.PromptTradeService;
@@ -15,11 +16,11 @@ public class PromptTradeController {
 
     private final PromptTradeService promptTradeService;
 
+    @Operation(summary = "프롬프트 구매 API", description = "프롬프트ID 를 입력받아 구매, 포인트 차감.")
     @PostMapping("/{promptId}/purchase")
     public ResponseEntity<String> purchasePrompt(
             @AuthenticationPrincipal Jwt jwt,
-            @PathVariable Integer promptId,
-            @RequestBody PromptPurchaseRequest request) {
+            @PathVariable Integer promptId) {
         // JWT로 유저 ID 조회
         String userAuth0Id = jwt.getSubject();
         promptTradeService.purchasePrompt(promptId, userAuth0Id);
