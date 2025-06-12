@@ -17,9 +17,9 @@
         tossPayments.requestPayment('카드', {
             amount: 1000,
             orderId: 'order_' + new Date().getTime(),
-            orderName: '테스트 프롬프트',
+            orderName: '1000 포인트 결제',
             customerName: '홍길동',
-            successUrl: 'http://localhost:8080/success',
+            successUrl: 'http://localhost:8080/api/payments/confirm?userId={user_id}',
             failUrl: 'http://localhost:8080/fail'
         });
     });
