@@ -16,5 +16,3 @@ public class PromptCreateRequestDto {
     private List<Integer> modelCategoryIds; // ModelCategory ID 목록
     private List<Integer> typeCategoryIds;  // TypeCategory ID 목록
 }
-
-

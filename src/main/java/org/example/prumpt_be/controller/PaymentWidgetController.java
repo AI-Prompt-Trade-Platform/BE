@@ -1,5 +1,6 @@
 package org.example.prumpt_be.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,8 @@ public class PaymentWidgetController {
     @Value("${toss.secret-key}")
     private String tossSecretKey;
 
+
+    @Operation(summary = "결제요청 처리", description = "auth0Id 를 받아 결제 처리.")
     @GetMapping("/api/payments/confirm")
     public ResponseEntity<?> confirmPayment(
             @RequestParam String paymentKey,

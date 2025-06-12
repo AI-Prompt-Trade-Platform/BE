@@ -33,8 +33,13 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 3. 인가(authorization) 규칙 설정
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/public/**").permitAll() // "/api/public/**" 엔드포인트는 모두 허용
+                        .requestMatchers("/api/prompts/**").permitAll() // "/api/public/**" 엔드포인트는 모두 허용
                         .requestMatchers("/api/monitoring/**").authenticated() // "/api/monitoring/**" 엔드포인트는 인증된 사용자만 접근 가능
+                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/api/success/**").authenticated()
+                        .requestMatchers("/confirm/**").authenticated()
+                        .requestMatchers("/api/reviews/**").authenticated()
+
                         // 그 외 API는 모두 허용
                         .anyRequest().permitAll()
                 )

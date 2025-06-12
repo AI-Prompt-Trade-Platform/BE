@@ -11,8 +11,9 @@ public class WebConfig implements WebMvcConfigurer {
         @Override
         public void addCorsMappings(CorsRegistry registry) {
             registry.addMapping("/api/**")
-                    .allowedOrigins("http://localhost:3000")  // 허용할 프론트 URL
+                    .allowedOrigins("http://localhost:3000")  // 허용할 프론트 URL  todo: (실제 운영할때에는 반드시 React서버의 도메인주소만 적용해야함!!!!!!!)
                     .allowedOrigins("http://localhost:8080")
+                    .allowedOrigins("http://localhost:5173")
                     .allowedMethods("GET","POST","PUT","DELETE")
                     .allowCredentials(true);                  // 쿠키 전송 허용
         }
