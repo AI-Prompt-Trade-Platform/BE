@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
