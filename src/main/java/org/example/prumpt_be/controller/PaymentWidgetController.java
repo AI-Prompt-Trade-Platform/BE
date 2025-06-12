@@ -5,21 +5,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
-
-import org.example.prumpt_be.dto.request.TossConfirmRequestDto;
-import org.example.prumpt_be.dto.request.PointPurchaseRequest;
 import org.example.prumpt_be.service.UserService;
 
 @Slf4j
-@RestController
+@RestController("/api/payments")
 @RequiredArgsConstructor
 public class PaymentWidgetController {
 
@@ -30,7 +24,7 @@ public class PaymentWidgetController {
 
 
     @Operation(summary = "결제요청 처리", description = "auth0Id 를 받아 결제 처리.")
-    @GetMapping("/api/payments/confirm")
+    @GetMapping("/confirm")
     public ResponseEntity<?> confirmPayment(
             @RequestParam String paymentKey,
             @RequestParam String orderId,

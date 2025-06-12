@@ -42,33 +42,32 @@ public class WishlistServiceImpl implements WishlistService {
         // 이미 위시리스트에 있는지 확인
         Optional<UserWishlist> existingWish = wishlistRepository.findByUserAndPrompt(user, prompt);
         if (existingWish.isPresent()) {
-            // 이미 존재하면 별도의 작업을 하지 않거나, 예외를 발생시킬 수 있습니다.
-            // 여기서는 멱등성을 위해 별도 작업 없이 반환합니다.
-            return;
-            // throw new RuntimeException("이미 위시리스트에 추가된 프롬프트입니다.");
+            //이미 존재하면 삭제
+            wishlistRepository.delete(existingWish.get());
+        } else {
+            // 없으면 위시리스트에 추가
+            UserWishlist newWish = UserWishlist.builder()
+                    .user(user)
+                    .prompt(prompt)
+                    // addedAt은 @CreationTimestamp에 의해 자동 설정됩니다.
+                    .build();
+            wishlistRepository.save(newWish);
         }
-
-        UserWishlist newWish = UserWishlist.builder()
-                .user(user)
-                .prompt(prompt)
-                // addedAt은 @CreationTimestamp에 의해 자동 설정됩니다.
-                .build();
-        wishlistRepository.save(newWish);
     }
 
-    @Override
-    @Transactional
-    public void removePromptFromWishlist(String auth0Id, Long promptId) {
-        Users user = userRepository.findByAuth0Id(auth0Id)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
-        Prompt prompt = promptRepository.findById(promptId)
-                .orElseThrow(() -> new RuntimeException("프롬프트를 찾을 수 없습니다. ID: " + promptId));
-
-        UserWishlist wish = wishlistRepository.findByUserAndPrompt(user, prompt)
-                .orElseThrow(() -> new RuntimeException("위시리스트에서 해당 프롬프트를 찾을 수 없습니다."));
-
-        wishlistRepository.delete(wish);
-    }
+//    @Override
+//    @Transactional
+//    public void removePromptFromWishlist(String auth0Id, Long promptId) {
+//        Users user = userRepository.findByAuth0Id(auth0Id)
+//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
+//        Prompt prompt = promptRepository.findById(promptId)
+//                .orElseThrow(() -> new RuntimeException("프롬프트를 찾을 수 없습니다. ID: " + promptId));
+//
+//        UserWishlist wish = wishlistRepository.findByUserAndPrompt(user, prompt)
+//                .orElseThrow(() -> new RuntimeException("위시리스트에서 해당 프롬프트를 찾을 수 없습니다."));
+//
+//        wishlistRepository.delete(wish);
+//    }
 
     @Override
     @Transactional(readOnly = true)

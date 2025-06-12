@@ -27,7 +27,7 @@ public interface WishlistService {
      * @param promptId 위시리스트에서 제거할 프롬프트의 ID
      * @throws RuntimeException 사용자를 찾을 수 없거나, 프롬프트를 찾을 수 없거나, 위시리스트에 해당 항목이 없는 경우 발생 (적절한 예외로 변경 권장)
      */
-    void removePromptFromWishlist(String auth0Id, Long promptId);
+//    void removePromptFromWishlist(String auth0Id, Long promptId);
 
     /**
      * 현재 인증된 사용자의 위시리스트 목록을 페이지네이션하여 조회합니다.
