@@ -21,7 +21,7 @@ public interface PromptCrudService {
      * @param promptId 조회할 프롬프트 ID
      * @return 프롬프트 상세 정보 DTO (별도 정의 필요 시) 또는 PromptSummaryDto
      */
-    PromptDetailDTO getPromptDetails(Long promptId); // 상세 DTO가 필요할 수 있음
+    PromptDetailDTO getPromptDetails(String auth0Id, Long promptId); // 상세 DTO가 필요할 수 있음
 
     /**
      * 특정 프롬프트 정보를 수정합니다.

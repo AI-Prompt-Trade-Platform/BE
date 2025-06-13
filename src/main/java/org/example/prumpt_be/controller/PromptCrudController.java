@@ -49,8 +49,11 @@ public class PromptCrudController {
     @GetMapping("/{promptId}")
     public ResponseEntity<PromptDetailDTO> getPromptDetails( // 상세 DTO로 변경 고려
             @Parameter(description = "조회할 프롬프트의 ID")
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long promptId) {
-        PromptDetailDTO promptDetails = promptCrudServiceImpl.getPromptDetails(promptId);
+        // JWT로 유저 ID 조회
+        String userAuth0Id = jwt.getSubject();
+        PromptDetailDTO promptDetails = promptCrudServiceImpl.getPromptDetails(userAuth0Id, promptId);
         return ResponseEntity.ok(promptDetails);
     }
 

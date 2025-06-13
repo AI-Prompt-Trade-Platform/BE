@@ -27,5 +27,5 @@ public class PromptDetailDTO {
     private String thumbnailImageUrl; // 대표 이미지 (example_content_url 또는 별도 필드)
     private String aiInspectionRate; // AI 검수 등급 (필요시)
     private LocalDateTime createdAt; // 등록일 (최신 프롬프트 정렬 등에 활용)
-
+    private boolean userPurchased; // 현재 사용자가 구매한 프롬프트인지 여부
 }

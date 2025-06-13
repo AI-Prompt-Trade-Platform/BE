@@ -97,16 +97,21 @@ public class PromptCrudServiceImpl implements PromptCrudService {
      */
     @Override
     @Transactional(readOnly = true)
-    public PromptDetailDTO getPromptDetails(Long promptId) {
-//        ClassificationDTO catDto = new ClassificationDTO(
-//                promptClassification.getModelCategory().getModelName(),
-//                promptClassification.getTypeCategory().getTypeName()
-//        );
-
+    public PromptDetailDTO getPromptDetails(String auth0Id, Long promptId) {
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new RuntimeException("프롬프트를 찾을 수 없습니다. ID: " + promptId));
-        // 필요하다면 PromptSummaryDto 대신 더 상세한 정보를 담는 DTO를 만들어 반환할 수 있습니다.
-        return convertToPromptDetailDTO(prompt);
+
+        // 1. 프롬프트 상세 정보 DTO로 변환 + prompt 정보 주입
+        PromptDetailDTO promptDetailDTO = convertToPromptDetailDTO(prompt);
+        // 2. 구매 여부 확인
+        boolean userPurchased = prompt.getPurchases().stream()
+                // prompt.getPurchases() 는 이미 promptId 로 연관된 구매만 가져오므로 promptId 체크는 선택사항입니다.
+                .anyMatch(purchase ->
+                        purchase.getBuyer().getAuth0Id().equals(auth0Id)
+                );
+
+        promptDetailDTO.setUserPurchased(userPurchased);
+        return promptDetailDTO;
     }
 
     // 프롬프트 업데이트
