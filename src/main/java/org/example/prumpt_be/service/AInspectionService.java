@@ -3,58 +3,110 @@ package org.example.prumpt_be.service;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
 import org.example.prumpt_be.repository.PromptsRepository;
+import org.springframework.beans.factory.annotation.Value; // Value 어노테이션 추가
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
-
-// todo: ChatGPT 평가와 S3 업로드를 위한 서비스 (필수)
 @Service
-//@ConditionalOnProperty(name = "aws.s3.enabled", havingValue = "true") //서비스할떈 이부분 제거
 public class AInspectionService {
 
-//    private final S3Uploader s3Uploader; // S3에 파일 업로드 하는 클래스
+    private final S3Uploader s3Uploader;
     private final OpenAiService openAiService;
     private final PromptsRepository promptsRepository;
 
-    public AInspectionService(OpenAiService openAiService, PromptsRepository promptsRepository) {
-//        this.s3Uploader = s3Uploader;
+    // application.properties에서 각 버킷 이름 주입
+    @Value("${aws.s3.bucket.text}")
+    private String textBucketName;
+
+    @Value("${aws.s3.bucket.image}")
+    private String imageBucketName;
+
+    @Value("${aws.s3.bucket.video}")
+    private String videoBucketName;
+
+
+    public AInspectionService(S3Uploader s3Uploader, OpenAiService openAiService, PromptsRepository promptsRepository) {
+        this.s3Uploader = s3Uploader;
         this.openAiService = openAiService;
         this.promptsRepository = promptsRepository;
     }
 
-    // todo: 수영님 프롬프트 등록Service에 연동 필요(준호님이 S3에 업로드하는 로직이어야 함)
     public void handlePromptUploadAndEvaluation(PromptUploadRequestDto request) {
-        // 1. S3에 파일 업로드
-//        String exampleUrl = s3Uploader.upload(request.getExampleValue()); // S3Uploader를 사용하여 파일 업로드
-          String exampleUrl = request.getExampleValue(); // 예시 URL은 프론트에서 받아온 값으로 대체
+        String exampleUrl = request.getExampleValue();
+        MultipartFile exampleFile = request.getExampleFile();
 
+        if (exampleFile != null && !exampleFile.isEmpty()) {
+            try {
+                String dirName; // S3 내에서의 폴더 구조 (예: "uploads", "public" 등 또는 타입별로 다르게)
+                String targetBucketName;
 
-        // 2. 어떤 프롬프트인지 조회 (DB저장 이후)
+                switch (request.getExampleType()) {
+                    case TEXT:
+                        dirName = "text_files"; // 예시 S3 디렉토리 이름
+                        targetBucketName = textBucketName;
+                        exampleUrl = s3Uploader.upload(exampleFile, targetBucketName, dirName);
+                        break;
+                    case IMAGE:
+                        dirName = "image_files"; // 예시 S3 디렉토리 이름
+                        targetBucketName = imageBucketName;
+                        exampleUrl = s3Uploader.upload(exampleFile, targetBucketName, dirName);
+                        break;
+                    case VIDEO:
+                        dirName = "video_files"; // 예시 S3 디렉토리 이름
+                        targetBucketName = videoBucketName;
+                        exampleUrl = s3Uploader.upload(exampleFile, targetBucketName, dirName);
+                        break;
+                    default:
+                        // 기본 버킷을 사용하거나 예외 처리
+                         throw new IllegalArgumentException("지원하지 않는 파일 타입 또는 파일 누락: " + request.getExampleType());
+                        // 여기서는 기존 exampleUrl을 유지하거나, 혹은 공통 버킷을 사용할 수 있습니다.
+                        // 예를 들어, 공통 버킷이 있다면:
+                        // targetBucketName = commonBucketName; // @Value로 주입 필요
+                        // dirName = "others";
+                        // exampleUrl = s3Uploader.upload(exampleFile, targetBucketName, dirName);
+//                        break; // 또는 예외 발생
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("S3 파일 업로드 중 오류 발생: " + e.getMessage(), e);
+            }
+        }
+
         Long promptId = request.getPromptId();
         Prompt prompt = promptsRepository.findById(promptId)
                 .orElseThrow(() -> new IllegalArgumentException("Prompt not found with id: " + promptId));
 
-        // 3. AI 평가 요청
+        if (exampleFile != null && !exampleFile.isEmpty()) {
+            // Prompt 엔티티의 exampleContentUrl 필드에 저장 (스키마에 따라 필드명 확인 필요)
+            prompt.setExampleContentUrl(exampleUrl);
+        }
+
         PromptUploadRequestDto targetPrompt = PromptUploadRequestDto.fromEntity(prompt);
+        // fromEntity에서 exampleValue를 설정했다면 아래 라인은 필요 없을 수 있음
+        // 또는 S3 업로드 후 URL로 항상 덮어쓰려면 유지
+        targetPrompt.setExampleValue(exampleUrl);
+        targetPrompt.setExampleType(request.getExampleType());
+
+
         String inspectionResult = openAiService.getInspectionRate(makePromptForStock(targetPrompt));
         System.out.println(inspectionResult);
 
-        // 4. 평가 결과 저장
         prompt.setAiInspectionRate(inspectionResult);
         promptsRepository.save(prompt);
     }
 
-    // 프롬프트 만드는 함수
-    private String makePromptForStock(PromptUploadRequestDto prompt) {
-        return switch (prompt.getExampleType()) {
-            case TEXT -> makePromptForText(prompt);
-            case IMAGE -> makePromptForImage(prompt);
-            case VIDEO -> makePromptForVideo(prompt);
-            default -> throw new IllegalArgumentException("지원하지 않는 ExampleType입니다: " + prompt.getExampleType());
+    // makePromptForStock 및 하위 메소드들은 변경 없음
+    private String makePromptForStock(PromptUploadRequestDto promptDto) { // DTO를 그대로 사용
+        return switch (promptDto.getExampleType()) {
+            case TEXT -> makePromptForText(promptDto.getPromptBody(), promptDto.getExampleValue());
+            case IMAGE -> makePromptForImage(promptDto.getPromptBody(), promptDto.getExampleValue());
+            case VIDEO -> makePromptForVideo(promptDto.getPromptBody(), promptDto.getExampleValue());
+            default -> throw new IllegalArgumentException("지원하지 않는 ExampleType입니다: " + promptDto.getExampleType());
         };
     }
 
     // 텍스트용 프롬프트
-    private String makePromptForText(PromptUploadRequestDto prompt) {
+    private String makePromptForText(String promptBody, String exampleText) {
         return String.format(
                 """
                         아래 기준에 따라 텍스트 생성 프롬프트와 예시 결과물의 유사도를 평가해 [S, A, B, C, D] 등급 중 하나를 부여해줘.
@@ -85,19 +137,19 @@ public class AInspectionService {
                         반드시 위의 포맷을 지켜 한 줄로만 답변해줘.
                         
                         """,
-                prompt.getPromptBody(),
-                prompt.getExampleValue()
+                promptBody,
+                exampleText
         );
     }
 
     // 이미지용 프롬프트
-    private String makePromptForImage(PromptUploadRequestDto prompt) {
+    private String makePromptForImage(String promptBody, String exampleImageUrl) {
         return String.format(
                 """
-                        아래 기준에 따라 이미지 생성 프롬프트와 예시 결과물의 유사도를 평가해 [S, A, B, C, D] 등급 중 하나를 부여해줘.
+                        아래 기준에 따라 이미지 생성 프롬프트와 예시 결과물(URL)의 유사도를 평가해 [S, A, B, C, D] 등급 중 하나를 부여해줘.
                         
                         1. 프롬프트 내용: %s
-                        2. 예시 결과물: %s
+                        2. 예시 결과물 URL: %s
                         
                         3. 평가 기준:
                           - **시각적 요소 일치도**: 프롬프트에서 요구한 객체, 인물, 배경, 색상이 예시 이미지에 얼마나 정확히 구현되었는지
@@ -120,19 +172,19 @@ public class AInspectionService {
                         
                         반드시 위의 포맷을 지켜 한 줄로만 답변해줘.
                         """,
-                prompt.getPromptBody(),
-                prompt.getExampleValue()
+                promptBody,
+                exampleImageUrl
         );
     }
 
     // 영상용 프롬프트
-    private String makePromptForVideo(PromptUploadRequestDto prompt) {
+    private String makePromptForVideo(String promptBody, String exampleVideoUrl) {
         return String.format(
                 """
-                        아래 기준에 따라 영상 생성 프롬프트와 예시 결과물의 유사도를 평가해 [S, A, B, C, D] 등급 중 하나를 부여해줘.
+                        아래 기준에 따라 영상 생성 프롬프트와 예시 결과물(URL)의 유사도를 평가해 [S, A, B, C, D] 등급 중 하나를 부여해줘.
                         
                         1. 프롬프트 내용: %s
-                        2. 예시 결과물: %s
+                        2. 예시 결과물 URL: %s
                         
                         3. 평가 기준:
                           - **영상 내용 일치도**: 프롬프트에서 요구한 장면, 인물, 배경, 액션이 예시 영상에 얼마나 정확히 구현되었는지
@@ -155,9 +207,8 @@ public class AInspectionService {
                         
                         반드시 위의 포맷을 지켜 한 줄로만 답변해줘.
                         """,
-                prompt.getPromptBody(),
-                prompt.getExampleValue()
+                promptBody,
+                exampleVideoUrl
         );
     }
 }
-

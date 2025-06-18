@@ -1,7 +1,6 @@
 package org.example.prumpt_be.dto.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -42,6 +41,10 @@ public class Prompt {
     @Column(name = "ai_inspection_rate", length = 255)
     private String aiInspectionRate;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Users ownerID;
+
     @Column(name = "example_content_url", length = 255)
     private String exampleContentUrl;
 
@@ -53,12 +56,13 @@ public class Prompt {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "model", columnDefinition = "TEXT")
+//    @Lob // TEXT 타입 매핑
+//    @Column(columnDefinition = "TEXT")
     private String model; // AI 모델 정보 (JSON 형태 등으로 저장 가능)
 
     @OneToOne(mappedBy = "prompt", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference       // 직렬화할 때 이쪽만 반환(순환 참조 방지)
-    private PromptClassification classifications;
+    @Builder.Default
+    private PromptClassification classifications = null;
 
     @OneToMany(mappedBy = "prompt", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -75,9 +79,6 @@ public class Prompt {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description; //썸네일에서 보기 편하게 하기위한 필드
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id", referencedColumnName = "user_id", nullable = false)
-    private Users ownerID;
 
     @ManyToMany
     @JoinTable(
@@ -85,5 +86,6 @@ public class Prompt {
             joinColumns = @JoinColumn(name = "prompt_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<Tag> tags;
+    private List<Tag> tags; 
+
 }

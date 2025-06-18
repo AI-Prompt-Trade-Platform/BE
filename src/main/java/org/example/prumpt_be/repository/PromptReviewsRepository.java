@@ -58,7 +58,9 @@ RateAvgDto findAvgRateOfAllPromptsByUserId(@Param("userId") int userId);        
 
     Optional<PromptReview> findByReviewIdAndReviewerUserId(Long reviewId, Integer userId);
 
-
+    // 특정 프롬프트의 평균 별점 조회
+    @Query("SELECT AVG(pr.rate) FROM PromptReview pr WHERE pr.promptID.promptId = :promptId")
+    Optional<Double> findAverageRateByPromptId(@Param("promptId") Long promptId);
 
 //==========================================================================
 

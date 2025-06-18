@@ -2,6 +2,8 @@ package org.example.prumpt_be.service;
 
 import org.example.prumpt_be.dto.PromptDetailDTO;
 import org.example.prumpt_be.dto.entity.Prompt;
+import org.example.prumpt_be.dto.entity.PromptReview;
+import org.example.prumpt_be.dto.entity.Tag;
 import org.example.prumpt_be.dto.response.PageResponseDto;
 import org.example.prumpt_be.dto.response.PromptSummaryDto;
 import org.example.prumpt_be.repository.PromptClassificationRepository;
@@ -27,6 +29,7 @@ public class HomePageServiceImpl implements HomePageService {
     private final PromptRepository promptRepository;
     private final PromptClassificationRepository promptClassificationRepository;
     private final PromptReviewsRepository promptReviewsRepository;
+
 
     @Override
     public PageResponseDto<PromptSummaryDto> getPopularPrompts(Pageable pageable) {
@@ -90,6 +93,11 @@ public class HomePageServiceImpl implements HomePageService {
                 .thumbnailImageUrl(prompt.getExampleContentUrl())
                 .aiInspectionRate(prompt.getAiInspectionRate())
                 .createdAt(prompt.getCreatedAt())
+                .description(prompt.getPromptName())
+                .typeCategory(prompt.getClassifications().getTypeCategory().getTypeName())
+                .rate(prompt.getReviews().stream().mapToDouble(PromptReview::getRate).average().orElse(0.0))
+                .salesCount(prompt.getPurchases().size())
+                .hashTags(prompt.getTags().stream().map(Tag::getName).toList())//해시태그 데이터 넣어야함
                 .build();
     }
 

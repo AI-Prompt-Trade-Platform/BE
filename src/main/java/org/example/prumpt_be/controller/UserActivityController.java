@@ -16,7 +16,7 @@ public class UserActivityController {
 
     private final UserPromptService userPromptService;
 
-    //프로필 컨트롤러에 포함
+    //프로필 컨트롤러에 포함됨
 //    @Operation(summary = "내가 구매한 프롬프트 목록 조회", description = "현재 사용자가 구매한 프롬프트 목록을 페이지네이션하여 조회합니다.")
 //    @GetMapping("/prompts/purchased")
 //    public ResponseEntity<PageResponseDto<PurchasedPromptDto>> getMyPurchasedPrompts(

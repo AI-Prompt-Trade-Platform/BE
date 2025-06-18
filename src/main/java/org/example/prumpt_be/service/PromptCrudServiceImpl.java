@@ -39,29 +39,29 @@ public class PromptCrudServiceImpl implements PromptCrudService {
      * @throws RuntimeException 사용자를 찾을 수 없거나, 카테고리를 찾을 수 없는 경우 발생 (적절한 예외 처리 권장)
      */
     @Override
-    @Transactional // 데이터 변경이 있으므로 트랜잭션 적용
+    @Transactional
     public PromptSummaryDto createPrompt(String auth0Id, PromptCreateRequestDto createRequestDto) {
         Users owner = userRepository.findByAuth0Id(auth0Id)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id)); // TODO: 맞춤형 예외
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
 
         Prompt prompt = Prompt.builder()
                 .promptName(createRequestDto.getPromptName())
                 .promptContent(createRequestDto.getPromptContent())
                 .price(createRequestDto.getPrice())
-                .exampleContentUrl(createRequestDto.getExampleContentUrl())
-                .model(createRequestDto.getModelInfo()) // 스키마 상 'model' 컬럼, DTO에서는 'modelInfo'로 가정
+                .model(createRequestDto.getModelInfo())
                 .ownerID(owner)
-                // aiInspectionRate는 초기에는 null이거나 기본값, 또는 별도 검수 프로세스를 통해 설정될 수 있습니다.
-                // createdAt, updatedAt은 @CreationTimestamp, @UpdateTimestamp에 의해 자동 관리됩니다.
-//                .classifications(new ArrayList<>()) // ★ classifications 리스트 초기화
                 .build();
 
-        // PromptClassification 엔티티 생성 및 Prompt와 연관 설정
+        // 1. 파일이 아닌 직접적인 URL이나 텍스트 내용이 제공된 경우, 우선 설정
+        // (파일이 업로드되면 AInspectionService에서 S3 URL로 덮어쓰여짐)
+        if (createRequestDto.getExampleFile() == null && createRequestDto.getExampleContent() != null) {
+            prompt.setExampleContentUrl(createRequestDto.getExampleContent());
+        }
+
+        // 2. PromptClassification 설정 (기존 로직 유지)
         if (createRequestDto.getModelCategoryIds() != null && !createRequestDto.getModelCategoryIds().isEmpty() &&
                 createRequestDto.getTypeCategoryIds() != null && !createRequestDto.getTypeCategoryIds().isEmpty()) {
-
-            // 이 예제에서는 각 카테고리 ID 리스트의 첫 번째 요소만 사용한다고 가정합니다.
-            // 실제 요구사항에 따라 여러 카테고리 조합을 처리하도록 로직 확장 필요.
+            // ... (카테고리 설정 로직) ...
             Integer modelCategoryId = createRequestDto.getModelCategoryIds().get(0);
             Integer typeCategoryId = createRequestDto.getTypeCategoryIds().get(0);
 
@@ -71,21 +71,34 @@ public class PromptCrudServiceImpl implements PromptCrudService {
                     .orElseThrow(() -> new RuntimeException("타입 카테고리를 찾을 수 없습니다. ID: " + typeCategoryId));
 
             PromptClassification classification = PromptClassification.builder()
-                    .prompt(prompt) // ★ 아직 DB에 저장되지 않은 Prompt 객체를 설정
+                    .prompt(prompt)
                     .modelCategory(modelCategory)
                     .typeCategory(typeCategory)
                     .build();
-
-            prompt.setClassifications(classification); // ★ Prompt 객체의 컬렉션에 추가
+            prompt.setClassifications(classification);
         }
 
-        // Prompt 엔티티 저장 시, CascadeType.ALL (또는 PERSIST) 설정에 의해
-        // prompt.classifications 리스트에 포함된 PromptClassification 객체들도 함께 저장됩니다.
+        // 3. 프롬프트 초기 저장 (ID 생성을 위해)
         Prompt savedPrompt = promptRepository.save(prompt);
 
-        PromptUploadRequestDto uploadRequest = PromptUploadRequestDto.fromEntity(savedPrompt);
+        // 4. AInspectionService를 통해 파일 업로드 및 AI 검수 처리
+        // PromptUploadRequestDto는 AInspectionService가 필요로 하는 파일과 타입 정보를 전달합니다.
+        PromptUploadRequestDto uploadRequest = new PromptUploadRequestDto();
+        uploadRequest.setPromptId(savedPrompt.getPromptId());
+        uploadRequest.setExampleFile(createRequestDto.getExampleFile()); // DTO에서 받은 파일
+        uploadRequest.setExampleType(createRequestDto.getExampleType());   // DTO에서 받은 타입
+        // uploadRequest.setExampleValue(createRequestDto.getExampleContentUrl()); // 필요시 URL/텍스트도 전달
+
+        // AInspectionService는 내부적으로 S3에 파일을 업로드하고,
+        // 해당 Prompt 엔티티의 exampleContentUrl 필드를 S3 URL로 업데이트 후 저장합니다.
+        // 또한 AI 검수 결과를 Prompt 엔티티에 업데이트하고 저장합니다.
         inspectionService.handlePromptUploadAndEvaluation(uploadRequest);
-        return convertToPromptSummaryDto(savedPrompt);
+
+        // 5. AInspectionService에 의해 변경된 최종 프롬프트 정보를 다시 조회
+        Prompt finalPrompt = promptRepository.findById(savedPrompt.getPromptId())
+                .orElseThrow(() -> new RuntimeException("프롬프트를 다시 찾을 수 없습니다. ID: " + savedPrompt.getPromptId()));
+
+        return convertToPromptSummaryDto(finalPrompt);
     }
 
     /**

@@ -38,7 +38,7 @@ public class PromptCrudController {
     public ResponseEntity<PromptSummaryDto> createPrompt(
             @AuthenticationPrincipal Jwt jwt,
             @Parameter(description = "인증된 사용자의 Auth0 ID", required = true)
-            @RequestBody PromptCreateRequestDto createRequestDto) {
+            @ModelAttribute PromptCreateRequestDto createRequestDto) {
         // JWT로 유저 ID 조회
         String userAuth0Id = jwt.getSubject();
         PromptSummaryDto createdPrompt = promptCrudServiceImpl.createPrompt(userAuth0Id, createRequestDto);

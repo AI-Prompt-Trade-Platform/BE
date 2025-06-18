@@ -34,7 +34,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-    implementation "software.amazon.awssdk:s3:2.20.0"
+    implementation platform('software.amazon.awssdk:bom:2.20.56') // 최신 버전으로 교체
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:s3-transfer-manager'
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
