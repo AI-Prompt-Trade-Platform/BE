@@ -9,6 +9,7 @@ import org.example.prumpt_be.dto.request.PromptReviewRequestDto;
 import org.example.prumpt_be.dto.entity.PromptReview;
 import org.example.prumpt_be.repository.*;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,64 +22,61 @@ public class PromptReviewServiceImpl implements PromptReviewService {
     private final UsersRepository usersRepository;
     private final PromptPurchaseRepository purchaseRepository;
 
+    // 커스텀 예외 클래스
+    public static class SelfReviewAttemptException extends RuntimeException {
+        public SelfReviewAttemptException(String message) {
+            super(message);
+        }
+    }
+
     // 프롬프트 리뷰 등록
     @Override
-    public void createReview(String auth0Id, PromptReviewRequestDto request) { //todo: 유저 ID 검증 메커니즘 필요 (완)
-        if (usersRepository.findByAuth0Id(auth0Id).isPresent()) {
-//            // 1. 리뷰 작성자 설정
-//            review.setReviewer(
-//                    userRepository.findById(auth0Id)
-//                            .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + request.getUserId()))
-//            );
-//
-//            // 2. 리뷰대상 프롬프트 ID로 조회하여 설정
-//            review.setPromptID(
-//                    promptRepository.findById(request.getPromptId())
-//                            .orElseThrow(() -> new IllegalArgumentException("해당 프롬프트를 찾을 수 없습니다: " + request.getPromptId()))
-//            );
-//
-//            // 3. 구매 내역 조회
-//            PromptPurchase purchase = purchaseRepository
-//                    .existsByBuyerAndPrompt(prompt, reviewer)
-//                    .orElseThrow(() -> new IllegalArgumentException(
-//                            "해당 프롬프트를 구매한 내역이 없습니다. promptId=" + request.getPromptId()));
-//
-//            review.setRate(request.getRate());
-//            review.setReviewContent(request.getReviewContent());
-//            review.setReviewedAt(LocalDateTime.now());
-//
-//            reviewsRepository.save(review);
-            // 1) 사용자 조회
-            Users reviewer = usersRepository.findByAuth0Id(auth0Id)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + auth0Id));
+    public void createReview(String auth0Id, PromptReviewRequestDto request) {
+        // 1) 사용자 및 프롬프트 조회
+        Users reviewer = usersRepository.findByAuth0Id(auth0Id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + auth0Id));
 
-            // 2) 프롬프트 조회
-            Prompt prompt = promptRepository.findById(request.getPromptId())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 프롬프트를 찾을 수 없습니다: " + request.getPromptId()));
+        Prompt prompt = promptRepository.findById(request.getPromptId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 프롬프트를 찾을 수 없습니다: " + request.getPromptId()));
 
-            // 3) 구매 내역 조회
-            PromptPurchase purchase = purchaseRepository
-                    .findByBuyerAndPrompt(reviewer, prompt)
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "해당 프롬프트를 구매한 내역이 없습니다. promptId=" + request.getPromptId()));
+        // 2) 리뷰 생성 전 유효성 검증 로직 실행
+        validateReviewCreation(reviewer, prompt);
 
-            // Todo: 리뷰 있으면 있다는 메세지 반환 로직 필요
+        // 3) 구매 내역 조회 (검증 후)
+        PromptPurchase purchase = purchaseRepository
+                .findByBuyerAndPrompt(reviewer, prompt)
+                .orElseThrow(() -> new IllegalStateException( // 구매내역이 없는건 서버 로직상 문제일 수 있으므로 IllegalStateException 사용 가능
+                        "해당 프롬프트를 구매한 내역이 없습니다. promptId=" + request.getPromptId()));
 
-            // 4) 리뷰 엔티티 생성 및 필드 세팅
-            PromptReview review = new PromptReview();
-            review.setReviewer(reviewer);
-            review.setPromptID(prompt);          // 엔티티 필드명이 prompt라면 setPrompt(...)
-            review.setPurchase(purchase);      // purchase_id NOT NULL
-            review.setRate(request.getRate());
-            review.setReviewContent(request.getReviewContent());
-            review.setReviewedAt(LocalDateTime.now());
+        // 4) 리뷰 엔티티 생성 및 저장
+        PromptReview review = PromptReview.builder()
+                .reviewer(reviewer)
+                .promptID(prompt)
+                .purchase(purchase)
+                .rate(request.getRate())
+                .reviewContent(request.getReviewContent())
+                .reviewedAt(LocalDateTime.now())
+                .build();
 
-            // 5) 저장
-            reviewsRepository.save(review);
-        } else {
-            throw new IllegalArgumentException("유효하지 않은 사용자 ID입니다: " + auth0Id);
+        reviewsRepository.save(review);
+    }
+
+    /**
+     * 리뷰 생성에 대한 유효성 검증을 수행하는 private 메소드
+     * @param reviewer 리뷰 작성자
+     * @param prompt 리뷰 대상 프롬프트
+     */
+    private void validateReviewCreation(Users reviewer, Prompt prompt) {
+        // 검증 1: 본인의 프롬프트인지 확인
+        if (prompt.getOwnerID().getUserId().equals(reviewer.getUserId())) {
+            // 커스텀 예외를 사용하여 더 명확하게 표현
+            throw new SelfReviewAttemptException("본인의 프롬프트에는 리뷰를 작성할 수 없습니다.");
         }
 
+        // 검증 2: 이미 리뷰를 작성했는지 확인 (TODO 해결)
+        if (reviewsRepository.existsByReviewerAndPromptID(reviewer, prompt)) {
+            throw new IllegalStateException("이미 해당 프롬프트에 대한 리뷰를 작성했습니다.");
+        }
     }
 
     // 프롬프트 리뷰 조회

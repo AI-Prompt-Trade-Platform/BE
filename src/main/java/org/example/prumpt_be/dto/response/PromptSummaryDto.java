@@ -19,8 +19,6 @@ public class PromptSummaryDto {
     private String thumbnailImageUrl;
     private String aiInspectionRate;
     private LocalDateTime createdAt;
-
-    // todo 주석에서 언급된 추가 필드들
     private String description;
     private String typeCategory; // 예: "image-generation", "text-summarization" 등 타입 카테고리 이름
     private Double rate; // 평균 별점

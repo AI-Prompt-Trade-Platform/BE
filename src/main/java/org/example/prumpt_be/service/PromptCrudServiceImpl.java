@@ -79,7 +79,7 @@ public class PromptCrudServiceImpl implements PromptCrudService {
         }
 
         // 3. 프롬프트 초기 저장 (ID 생성을 위해)
-        Prompt savedPrompt = promptRepository.save(prompt);
+        Prompt savedPrompt = promptRepository.save(prompt); //todo: 예외처리 메세지 반환하는 Service 필요
 
         // 4. AInspectionService를 통해 파일 업로드 및 AI 검수 처리
         // PromptUploadRequestDto는 AInspectionService가 필요로 하는 파일과 타입 정보를 전달합니다.
@@ -87,11 +87,10 @@ public class PromptCrudServiceImpl implements PromptCrudService {
         uploadRequest.setPromptId(savedPrompt.getPromptId());
         uploadRequest.setExampleFile(createRequestDto.getExampleFile()); // DTO에서 받은 파일
         uploadRequest.setExampleType(createRequestDto.getExampleType());   // DTO에서 받은 타입
-        // uploadRequest.setExampleValue(createRequestDto.getExampleContentUrl()); // 필요시 URL/텍스트도 전달
 
         // AInspectionService는 내부적으로 S3에 파일을 업로드하고,
-        // 해당 Prompt 엔티티의 exampleContentUrl 필드를 S3 URL로 업데이트 후 저장합니다.
-        // 또한 AI 검수 결과를 Prompt 엔티티에 업데이트하고 저장합니다.
+        // 해당 Prompt 엔티티의 exampleContentUrl 필드를 S3 URL로 업데이트 후 저장.
+        // 또한 AI 검수 결과를 Prompt 엔티티에 업데이트하고 저장.
         inspectionService.handlePromptUploadAndEvaluation(uploadRequest);
 
         // 5. AInspectionService에 의해 변경된 최종 프롬프트 정보를 다시 조회

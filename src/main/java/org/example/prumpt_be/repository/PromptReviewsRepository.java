@@ -2,7 +2,9 @@ package org.example.prumpt_be.repository;
 
 
 import org.example.prumpt_be.dto.ReviewDTO;
+import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.entity.PromptReview;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.dto.response.PromptAvgRateDto;
 import org.example.prumpt_be.dto.response.RateAvgDto;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -61,6 +63,8 @@ RateAvgDto findAvgRateOfAllPromptsByUserId(@Param("userId") int userId);        
     // 특정 프롬프트의 평균 별점 조회
     @Query("SELECT AVG(pr.rate) FROM PromptReview pr WHERE pr.promptID.promptId = :promptId")
     Optional<Double> findAverageRateByPromptId(@Param("promptId") Long promptId);
+
+    boolean existsByReviewerAndPromptID(Users reviewer, Prompt prompt);
 
 //==========================================================================
 
