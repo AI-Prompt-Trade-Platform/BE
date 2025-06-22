@@ -44,18 +44,6 @@ public class WishlistController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-//    @Operation(summary = "위시리스트에서 프롬프트 제거", description = "현재 사용자의 위시리스트에서 특정 프롬프트를 제거합니다.")
-//    @DeleteMapping("/{promptId}") // 경로 변수로 promptId를 받음
-//    public ResponseEntity<Void> removePromptFromWishlist(
-//            @Parameter(description = "인증된 사용자의 Auth0 ID", required = true)
-//            @AuthenticationPrincipal Jwt jwt,
-//            @Parameter(description = "위시리스트에서 제거할 프롬프트의 ID") @PathVariable Long promptId) {
-//        // JWT로 유저 ID 조회
-//        String userAuth0Id = jwt.getSubject();
-//        wishlistService.removePromptFromWishlist(userAuth0Id, promptId);
-//        return ResponseEntity.noContent().build(); // 204 No Content
-//    }
-
     @Operation(summary = "내 위시리스트 목록 조회", description = "현재 사용자의 위시리스트에 담긴 프롬프트 목록을 페이지네이션하여 조회합니다.")
     @GetMapping
     public ResponseEntity<PageResponseDto<PromptSummaryDto>> getUserWishlist(

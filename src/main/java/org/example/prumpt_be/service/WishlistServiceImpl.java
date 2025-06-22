@@ -55,19 +55,6 @@ public class WishlistServiceImpl implements WishlistService {
         }
     }
 
-//    @Override
-//    @Transactional
-//    public void removePromptFromWishlist(String auth0Id, Long promptId) {
-//        Users user = userRepository.findByAuth0Id(auth0Id)
-//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다. Auth0 ID: " + auth0Id));
-//        Prompt prompt = promptRepository.findById(promptId)
-//                .orElseThrow(() -> new RuntimeException("프롬프트를 찾을 수 없습니다. ID: " + promptId));
-//
-//        UserWishlist wish = wishlistRepository.findByUserAndPrompt(user, prompt)
-//                .orElseThrow(() -> new RuntimeException("위시리스트에서 해당 프롬프트를 찾을 수 없습니다."));
-//
-//        wishlistRepository.delete(wish);
-//    }
 
     @Override
     @Transactional(readOnly = true)
