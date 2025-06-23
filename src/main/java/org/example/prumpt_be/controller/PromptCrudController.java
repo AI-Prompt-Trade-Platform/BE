@@ -3,24 +3,25 @@ package org.example.prumpt_be.controller;
 import org.example.prumpt_be.dto.PromptDetailDTO;
 import org.example.prumpt_be.dto.request.PromptCreateRequestDto;
 import org.example.prumpt_be.dto.request.PromptUpdateRequestDto;
-import org.example.prumpt_be.dto.response.PromptSummaryDto; // 상세 DTO 사용 고려
+import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
+import org.example.prumpt_be.dto.response.PromptSummaryDto;
 import org.example.prumpt_be.service.PromptCrudService;
-import org.example.prumpt_be.service.PromptCrudServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-// import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
+import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 프롬프트의 생성, 조회, 수정, 삭제(CRUD) 관련 API 엔드포인트를 제공하는 컨트롤러입니다.
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/prompts")
 @RequiredArgsConstructor
@@ -29,19 +30,62 @@ public class PromptCrudController {
 
     private final PromptCrudService promptCrudService;
 
-    // 임시로 Auth0 ID를 헤더에서 받는다고 가정.
-//    private static final String AUTH0_ID_HEADER = "XA66dJ5qcWqXFqSHK0vvcYbQkhziXnBO@clients";
-    private final PromptCrudServiceImpl promptCrudServiceImpl;
-
     @Operation(summary = "새 프롬프트 생성", description = "새로운 프롬프트를 등록합니다.")
-    @PostMapping
+    @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<PromptSummaryDto> createPrompt(
             @AuthenticationPrincipal Jwt jwt,
-            @Parameter(description = "인증된 사용자의 Auth0 ID", required = true)
-            @ModelAttribute PromptCreateRequestDto createRequestDto) {
+            @Parameter(description = "프롬프트 제목", required = true) @RequestParam("promptName") String promptName,
+            @Parameter(description = "프롬프트 내용", required = true) @RequestParam("promptContent") String promptContent,
+            @Parameter(description = "가격", required = true) @RequestParam("price") Integer price,
+            @Parameter(description = "프롬프트 설명", required = true) @RequestParam("description") String description,
+            @Parameter(description = "예시 파일 (이미지, 영상 등)") @RequestParam(value = "exampleFile", required = false) MultipartFile exampleFile,
+            @Parameter(description = "예시 타입", required = true) @RequestParam("exampleType") PromptUploadRequestDto.ExampleType exampleType,
+            @Parameter(description = "모델 카테고리 ID", required = true) @RequestParam("modelCategoryIds") Integer modelCategoryIds,
+            @Parameter(description = "타입 카테고리 ID", required = true) @RequestParam("typeCategoryIds") Integer typeCategoryIds
+    ) {
+        // 파라미터 값들을 로깅하여 multipart/form-data 파싱 확인
+        log.info("=== Multipart Form Data 파싱 결과 ===");
+        log.info("promptName: {}", promptName);
+        log.info("promptContent: {}", promptContent);
+        log.info("price: {}", price);
+        log.info("description: {}", description);
+        log.info("exampleFile: {} (size: {})", 
+                exampleFile != null ? exampleFile.getOriginalFilename() : "null",
+                exampleFile != null ? exampleFile.getSize() : 0);
+        log.info("exampleType: {}", exampleType);
+        log.info("modelCategoryIds: {}", modelCategoryIds);
+        log.info("typeCategoryIds: {}", typeCategoryIds);
+        log.info("=======================================");
+
         // JWT로 유저 ID 조회
         String userAuth0Id = jwt.getSubject();
-        PromptSummaryDto createdPrompt = promptCrudServiceImpl.createPrompt(userAuth0Id, createRequestDto);
+
+        // DTO 수동 생성 및 값 설정
+        PromptCreateRequestDto createRequestDto = new PromptCreateRequestDto();
+        createRequestDto.setPromptName(promptName);
+        createRequestDto.setPromptContent(promptContent);
+        createRequestDto.setPrice(price);
+        createRequestDto.setDescription(description);
+        createRequestDto.setExampleFile(exampleFile);
+        createRequestDto.setExampleType(exampleType);
+        createRequestDto.setModelCategoryIds(modelCategoryIds);
+        createRequestDto.setTypeCategoryIds(typeCategoryIds);
+
+        PromptSummaryDto createdPrompt = promptCrudService.createPrompt(userAuth0Id, createRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPrompt);
+    }
+
+    @Operation(summary = "새 프롬프트 생성 (JSON)", description = "파일 업로드 없이 JSON으로 새로운 프롬프트를 등록합니다.")
+    @PostMapping(consumes = {"application/json"})
+    public ResponseEntity<PromptSummaryDto> createPromptJson(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody PromptCreateRequestDto createRequestDto
+    ) {
+
+        // JWT로 유저 ID 조회
+        String userAuth0Id = jwt.getSubject();
+
+        PromptSummaryDto createdPrompt = promptCrudService.createPrompt(userAuth0Id, createRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPrompt);
     }
 
@@ -53,7 +97,7 @@ public class PromptCrudController {
             @PathVariable Long promptId) {
         // JWT로 유저 ID 조회
         String userAuth0Id = jwt.getSubject();
-        PromptDetailDTO promptDetails = promptCrudServiceImpl.getPromptDetails(userAuth0Id, promptId);
+        PromptDetailDTO promptDetails = promptCrudService.getPromptDetails(userAuth0Id, promptId);
         return ResponseEntity.ok(promptDetails);
     }
 
@@ -67,7 +111,7 @@ public class PromptCrudController {
             @RequestBody PromptUpdateRequestDto updateRequestDto) {
         // JWT로 유저 ID 조회
         String userAuth0Id = jwt.getSubject();
-        PromptSummaryDto updatedPrompt = promptCrudServiceImpl.updatePrompt(userAuth0Id, promptId, updateRequestDto);
+        PromptSummaryDto updatedPrompt = promptCrudService.updatePrompt(userAuth0Id, promptId, updateRequestDto);
         return ResponseEntity.ok(updatedPrompt);
     }
 

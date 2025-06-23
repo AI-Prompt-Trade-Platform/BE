@@ -10,14 +10,10 @@ import java.util.List;
 public class PromptCreateRequestDto {
     private String promptName;
     private String promptContent;
-    private Integer price;
-    private String exampleContent;
-    private String description;
-    // 파일(이미지, 영상, 텍스트 파일)을 업로드할 경우 사용
-    private MultipartFile exampleFile;
-    // 예시 데이터의 타입 ("TEXT", "IMAGE", "VIDEO")
-    private PromptUploadRequestDto.ExampleType exampleType;
-    private String modelInfo; // AI 모델 정보 (엔티티의 'model' 필드)
-    private List<Integer> modelCategoryIds; // ModelCategory ID 목록
-    private List<Integer> typeCategoryIds;  // TypeCategory ID 목록
+    private Integer price; //가격
+    private String description; // 프롬프트 설명
+    private MultipartFile exampleFile; // 업로드한 이미지, 영상 등
+    private PromptUploadRequestDto.ExampleType exampleType;     // 예시 데이터의 타입 ("TEXT", "IMAGE", "VIDEO")
+    private Integer modelCategoryIds; // ModelCategory ID 목록
+    private Integer typeCategoryIds;  // TypeCategory ID 목록
 }

@@ -1,7 +1,7 @@
 package org.example.prumpt_be.repository;
 
-
 import org.example.prumpt_be.dto.entity.UserSalesSummary;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.dto.response.EachDaysProfitDto;
 import org.example.prumpt_be.dto.entity.UserSalesSummaryId;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,69 +13,80 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-// todo: 수익요약 Repository (필수)
 @Repository
 public interface UserSalesSummaryRepository
-    extends JpaRepository<UserSalesSummary, UserSalesSummaryId> {
+        extends JpaRepository<UserSalesSummary, UserSalesSummaryId> {
 
-    //지정된 기간(startDate ~ endDate) 동안의 판매 금액 조회
-    //데이터 없으면 0 반환
+    /**
+     * [수정됨]
+     * WHERE 절의 필드 경로를 복합 키 구조에 맞게 `u.id.userID`로 수정합니다.
+     */
     @Query("""
        SELECT COALESCE(SUM(u.totalRevenue), 0)
          FROM UserSalesSummary u
-        WHERE u.userID.userId   = :userId
-          AND u.summaryDate  >= :startDate
-          AND u.summaryDate  <= :endDate
+        WHERE u.id.userID       = :user
+          AND u.id.summaryDate >= :startDate
+          AND u.id.summaryDate <= :endDate
     """)
-    BigDecimal findTotalRevenueByUserIdAndPeriod(                  //todo: Repo 테스트 (완)
-            @Param("userId")    int  userId, //사용자Id 입력
-            @Param("startDate") LocalDate startDate, //조회 기간 시작일
-            @Param("endDate")   LocalDate endDate //조회 기간 종료일
-    );
-
-    //조회한 날의 어제자 수익 반환 메소드
-    @Query("""
-   SELECT COALESCE(SUM(u.totalRevenue), 0)
-     FROM UserSalesSummary u
-    WHERE u.userID.userId  = :userID
-      AND u.summaryDate  = :yesterday
-""")
-    BigDecimal findYesterdayRevenueByUserId(               //todo: Repo 테스트 (완)
-            @Param("userID") int userID,
-            @Param("yesterday") LocalDate yesterday //Service 계층에서 어제날짜를 입력 해줘야함
-    );
-
-    //특정 기간동안 수익이 있던 날들의 데이터 출력 (차트 그리기용)
-    @Query("""
-    SELECT new org.example.prumpt_be.dto.response.EachDaysProfitDto(
-             u.userID.userId,
-             u.summaryDate,
-             u.totalRevenue
-           )
-      FROM UserSalesSummary u
-     WHERE u.userID.userId   = :userID
-       AND u.summaryDate     >= :startDate
-       AND u.summaryDate     <= :endDate
-     ORDER BY u.summaryDate
-""")
-    List<EachDaysProfitDto> findDailyRevenueByUserAndPeriod(               //todo: Repo 테스트 (완)
-            @Param("userID")    int  userID,
+    BigDecimal findTotalRevenueByUserIdAndPeriod(
+            @Param("user")      Users user,
             @Param("startDate") LocalDate startDate,
             @Param("endDate")   LocalDate endDate
     );
 
-    //특정 사용자의 총 판매 건수 조회
+    /**
+     * [수정됨]
+     * WHERE 절의 필드 경로를 `u.id.userID`와 `u.id.summaryDate`로 수정합니다.
+     */
     @Query("""
-    SELECT COUNT(p)
-      FROM PromptPurchase p
-     WHERE p.prompt.ownerID.userId = :userID
-""")
-    long countTotalSalesByUserId(@Param("userID") int userID);
-
-    @Query("SELECT u FROM UserSalesSummary u WHERE u.userID.userId = :userId AND u.summaryDate = :summaryDate")
-    Optional<UserSalesSummary> findByUserIDAndSummaryDate(
-            @Param("userId") Integer userId,
-            @Param("summaryDate") LocalDate summaryDate
+       SELECT COALESCE(SUM(u.totalRevenue), 0)
+         FROM UserSalesSummary u
+        WHERE u.id.userID      = :user
+          AND u.id.summaryDate = :yesterday
+    """)
+    BigDecimal findYesterdayRevenueByUserId(
+            @Param("user")      Users user,
+            @Param("yesterday") LocalDate yesterday
     );
 
+    /**
+     * [수정됨]
+     * SELECT 및 WHERE 절의 모든 필드 경로를 복합 키 구조에 맞게 수정합니다.
+     */
+    @Query("""
+        SELECT new org.example.prumpt_be.dto.response.EachDaysProfitDto(
+                 u.id.userID.userId,
+                 u.id.summaryDate,
+                 u.totalRevenue
+               )
+          FROM UserSalesSummary u
+         WHERE u.id.userID        = :user
+           AND u.id.summaryDate  >= :startDate
+           AND u.id.summaryDate  <= :endDate
+         ORDER BY u.id.summaryDate
+    """)
+    List<EachDaysProfitDto> findDailyRevenueByUserAndPeriod(
+            @Param("user")      Users user,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate")   LocalDate endDate
+    );
+
+    /**
+     * [수정 불필요]
+     * 이 쿼리는 UserSalesSummary가 아닌 PromptPurchase를 조회하므로
+     * 기존 코드가 올바릅니다.
+     */
+    @Query("""
+        SELECT COUNT(p)
+          FROM PromptPurchase p
+         WHERE p.prompt.ownerID = :user
+    """)
+    long countTotalSalesByUserId(@Param("user") Users user);
+
+    /**
+     * [수정됨]
+     * Spring Data JPA의 Query Derivation(메소드 이름으로 쿼리 생성)을
+     * 복합 키 구조에 맞게 수정한 이름입니다. 이 코드는 올바릅니다.
+     */
+    Optional<UserSalesSummary> findById_UserIDAndId_SummaryDate(Users userID, LocalDate summaryDate);
 }

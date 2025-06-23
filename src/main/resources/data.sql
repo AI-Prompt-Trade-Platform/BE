@@ -51,12 +51,40 @@ INSERT IGNORE INTO prompts (
        '{"model":"dall-e"}',
        1,
        '2025-06-06 10:00:00', '2025-06-06 10:00:00'
+      ),
+      ('테스트용1',
+       'ㄷㄱㅎㄷㄱㅎㄷㄱㅍㅈㄷㄱㅍㅈㄷㅍㄷㄱㅍㄷ',
+       20, 'B',
+       'https://drive.google.com/file/d/188YQaW4ov59u5QLZustsE5OEmb-SiUg4/view?usp=sharing',
+       'AI image creator',
+       '{"model":"dall-e"}',
+       93,
+       '2025-06-06 10:00:00', '2025-06-06 10:00:00'
+      ),
+      ('테스트용2',
+       'ㅈㄹㄱㄷㄹㄷㄱㄹㅎㄷㄱㄹ',
+       220, 'B',
+       'https://drive.google.com/file/d/188YQaW4ov59u5QLZustsE5OEmb-SiUg4/view?usp=sharing',
+       'AI image creator',
+       '{"model":"dall-e"}',
+       93,
+       '2025-06-06 10:00:00', '2025-06-06 10:00:00'
+      ),
+      ('테스트용3',
+         's3테스트',
+         220, 'B',
+         'https://prumpt2-image.s3.ap-northeast-2.amazonaws.com/%E1%84%8B%E1%85%A1%E1%84%83%E1%85%A9%E1%84%8B%E1%85%B5.jpg',
+         'AI image creator',
+         '{"model":"dall-e"}',
+         93,
+         '2025-06-06 10:00:00', '2025-06-06 10:00:00'
       );
 
 -- Prompt classifications
 INSERT IGNORE INTO prompt_classifications (prompt_id, model_id, type_id) VALUES
                                                                       (1, 1, 1),
-                                                                      (2, 2, 2);
+                                                                      (2, 2, 2),
+                                                                      (110,2,2);
 
 -- Prompt–Tag associations
 INSERT IGNORE INTO prompt_tag (prompt_id, tag_id) VALUES
@@ -67,7 +95,8 @@ INSERT IGNORE INTO prompt_tag (prompt_id, tag_id) VALUES
 -- Prompt purchases
 INSERT IGNORE INTO prompt_purchases (buyer_id, prompt_id, purchased_at) VALUES
     (2, 1, '2025-06-07 14:00:00'),
-    (7, 2, '2025-06-07 15:00:00');
+    (7, 2, '2025-06-07 15:00:00'),
+    (93, 1, '2025-06-07 14:00:00');
 
 -- User sales summary
 INSERT IGNORE INTO user_sales_summary (
@@ -87,3 +116,4 @@ INSERT IGNORE INTO prompt_reviews (
     rate, review_content, reviewed_at, updated_at
 ) VALUES
     (1, 1, 2, 4.5, 'Great summary!', '2025-06-07 15:30:00', '2025-06-07 15:30:00');
+

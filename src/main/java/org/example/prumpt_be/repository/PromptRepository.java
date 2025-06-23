@@ -69,4 +69,6 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
             @Param("promptId") Long promptId,
             @Param("auth0Id")  String auth0Id
     );
+
+    List<Prompt> findByOwnerID(Users user);
 }

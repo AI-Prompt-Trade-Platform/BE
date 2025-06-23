@@ -32,7 +32,7 @@ public interface PromptsRepository extends JpaRepository<Prompt, Long> {
     @Query("DELETE FROM Prompt p WHERE p.promptId = :id")
     int deletePromptById(@Param("id") Integer id);
 
-    // 특정 사용자가 판매중인 프롬프트 조회
+    // [수정됨] Integer userId 대신 Users 객체를 직접 받도록 변경
     @Query("""
         SELECT new org.example.prumpt_be.dto.response.PromptDto(
             p.promptId,
@@ -41,9 +41,9 @@ public interface PromptsRepository extends JpaRepository<Prompt, Long> {
             p.price
         )
         FROM Prompt p
-        WHERE p.ownerID.userId = :userId
+        WHERE p.ownerID = :user
     """)
-    List<PromptDto> findAllByOwnerId(@Param("userId") Integer userId);
+    List<PromptDto> findAllByOwnerId(@Param("user") Users user);
 
 
     @Query("""

@@ -34,18 +34,17 @@ public class MonitoringController {
 
         // JWT로 유저 ID 조회
         String userAuth0Id = jwt.getSubject();
-        int userId = moniteringService.getUserIdByAuth0Id(userAuth0Id);
 
         //1. 판매중인 프롬프트 리스트 조회
-        List<PromptDto> allPrompts = moniteringService.getAllPromptsByOwnerId(userId);
+        List<PromptDto> allPrompts = moniteringService.getAllPromptsByOwnerId(userAuth0Id);
         //2. 특정 기간(1달,6개월,1년 중 택1) 동안의 일일 수익 조회(FE에서 차트 그리기용)
-        List<EachDaysProfitDto> eachDaysProfits = moniteringService.findDailyRevenueWithZero(userId, period);
+        List<EachDaysProfitDto> eachDaysProfits = moniteringService.findDailyRevenueWithZero(userAuth0Id, period);
         //3. 유저의 별점 평균 조회
-        RateAvgDto avgRate = moniteringService.getAvgRateOfAllPromptsByUserId(userId);
+        RateAvgDto avgRate = moniteringService.getAvgRateOfAllPromptsByUserId(userAuth0Id);
         //4. 유저의 이달 총 수입 조회
-        BigDecimal thisMonthProfit = moniteringService.getProfitOfThisMonthByUserId(userId);
+        BigDecimal thisMonthProfit = moniteringService.getProfitOfThisMonthByUserId(userAuth0Id);
         //5. 총 판매 건수
-        Long totalSalesCount = moniteringService.getTotalSalesCountByUserId(userId);
+        Long totalSalesCount = moniteringService.getTotalSalesCountByUserId(userAuth0Id);
 
         return new MoniteringResponseDto(
                 allPrompts,                // ① 판매 중인 프롬프트 전체 리스트

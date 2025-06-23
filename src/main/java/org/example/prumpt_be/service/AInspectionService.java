@@ -2,7 +2,7 @@ package org.example.prumpt_be.service;
 
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
-import org.example.prumpt_be.repository.PromptsRepository;
+import org.example.prumpt_be.repository.PromptRepository;
 import org.springframework.beans.factory.annotation.Value; // Value 어노테이션 추가
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,7 +13,7 @@ public class AInspectionService {
 
     private final S3Uploader s3Uploader;
     private final OpenAiService openAiService;
-    private final PromptsRepository promptsRepository;
+    private final PromptRepository promptRepository;
 
     // application.properties에서 각 버킷 이름 주입
     @Value("${aws.s3.bucket.text}")
@@ -26,10 +26,10 @@ public class AInspectionService {
     private String videoBucketName;
 
 
-    public AInspectionService(S3Uploader s3Uploader, OpenAiService openAiService, PromptsRepository promptsRepository) {
+    public AInspectionService(S3Uploader s3Uploader, OpenAiService openAiService, PromptRepository promptRepository) {
         this.s3Uploader = s3Uploader;
         this.openAiService = openAiService;
-        this.promptsRepository = promptsRepository;
+        this.promptRepository = promptRepository;
     }
 
     public void handlePromptUploadAndEvaluation(PromptUploadRequestDto request) {
@@ -73,7 +73,7 @@ public class AInspectionService {
         }
 
         Long promptId = request.getPromptId();
-        Prompt prompt = promptsRepository.findById(promptId)
+        Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new IllegalArgumentException("Prompt not found with id: " + promptId));
 
         if (exampleFile != null && !exampleFile.isEmpty()) {
@@ -92,7 +92,7 @@ public class AInspectionService {
         System.out.println(inspectionResult);
 
         prompt.setAiInspectionRate(inspectionResult);
-        promptsRepository.save(prompt);
+        promptRepository.save(prompt);
     }
 
     // makePromptForStock 및 하위 메소드들은 변경 없음

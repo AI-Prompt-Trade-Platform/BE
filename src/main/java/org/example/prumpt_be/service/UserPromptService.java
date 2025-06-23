@@ -1,5 +1,6 @@
 package org.example.prumpt_be.service;
 
+import org.example.prumpt_be.dto.PromptDetailDTO;
 import org.example.prumpt_be.dto.response.PageResponseDto;
 import org.example.prumpt_be.dto.response.PurchasedPromptDto;
 import org.example.prumpt_be.dto.response.SellingPromptDto;
@@ -24,5 +25,4 @@ public interface UserPromptService {
      * @param pageable 페이지네이션 정보
      * @return 페이징된 판매 중인 프롬프트 목록
      */
-    PageResponseDto<SellingPromptDto> getMySellingPrompts(String auth0Id, Pageable pageable);
-}
+    PageResponseDto<PromptDetailDTO> getMySellingPrompts(String auth0Id, Pageable pageable);}

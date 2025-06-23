@@ -20,32 +20,32 @@ public interface PromptReviewsRepository extends JpaRepository<PromptReview, Lon
 
 
 //================================조회=========================================
-    //특정 유저의 프롬프트들 전체 별점 평균 조회
+// [수정됨] int userId 대신 Users 객체를 직접 받도록 변경
 @Query("""
-        SELECT new org.example.prumpt_be.dto.response.RateAvgDto(
+            SELECT new org.example.prumpt_be.dto.response.RateAvgDto(
+                pr.promptID.ownerID.userId,
+                AVG(pr.rate)
+            )
+              FROM PromptReview pr
+             WHERE pr.promptID.ownerID = :user
+             GROUP BY pr.promptID.ownerID.userId
+        """)
+RateAvgDto findAvgRateOfAllPromptsByUserId(@Param("user") Users user);
+
+
+    // [수정됨] Integer userId 대신 Users 객체를 직접 받도록 변경
+    @Query("""
+        SELECT new org.example.prumpt_be.dto.response.PromptAvgRateDto(
             pr.promptID.ownerID.userId,
+            pr.promptID.promptId,
+            pr.promptID.promptName,
             AVG(pr.rate)
         )
-          FROM PromptReview pr
-         WHERE pr.promptID.ownerID.userId = :userId
-         GROUP BY pr.promptID.ownerID.userId
+        FROM PromptReview pr
+        WHERE pr.promptID.ownerID = :user
+        GROUP BY pr.promptID.promptId, pr.promptID.promptName, pr.promptID.ownerID.userId
     """)
-RateAvgDto findAvgRateOfAllPromptsByUserId(@Param("userId") int userId);          //todo: Repo 테스트 (완)
-
-
-    //특정 유저의 각 프롬프트별 평균별점 리스트 조회
-    @Query("""
-    SELECT new org.example.prumpt_be.dto.response.PromptAvgRateDto(
-        pr.promptID.ownerID.userId,
-        pr.promptID.promptId,
-        pr.promptID.promptName,
-        AVG(pr.rate)
-    )
-    FROM PromptReview pr
-    WHERE pr.promptID.ownerID.userId = :userId
-    GROUP BY pr.promptID.promptId, pr.promptID.promptName, pr.promptID.ownerID.userId
-""")
-    List<PromptAvgRateDto> findAvgRateByPromptOfUser(@Param("userId") Integer userId);
+    List<PromptAvgRateDto> findAvgRateByPromptOfUser(@Param("user") Users user);
 
     // 특정 프롬프트의 리뷰 전체 조회 (리뷰 DTO로 변환)
     @Query("SELECT new org.example.prumpt_be.dto.ReviewDTO(" +

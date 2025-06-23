@@ -4,11 +4,10 @@ import org.example.prumpt_be.dto.PromptDetailDTO;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.entity.PromptReview;
 import org.example.prumpt_be.dto.entity.Tag;
+import org.example.prumpt_be.dto.entity.Users;
 import org.example.prumpt_be.dto.response.PageResponseDto;
 import org.example.prumpt_be.dto.response.PromptSummaryDto;
-import org.example.prumpt_be.repository.PromptClassificationRepository;
-import org.example.prumpt_be.repository.PromptRepository;
-import org.example.prumpt_be.repository.PromptReviewsRepository;
+import org.example.prumpt_be.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils; // StringUtils 임포트
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * HomePageService의 구현체입니다.
@@ -29,6 +32,8 @@ public class HomePageServiceImpl implements HomePageService {
     private final PromptRepository promptRepository;
     private final PromptClassificationRepository promptClassificationRepository;
     private final PromptReviewsRepository promptReviewsRepository;
+    private final UserRepository userRepository;
+    private final WishlistRepository wishlistRepository;
 
 
     @Override
@@ -85,6 +90,33 @@ public class HomePageServiceImpl implements HomePageService {
                 ? prompt.getOwnerID().getProfileName()
                 : "Unknown";
 
+        // 1. typeCategory가 null일 경우를 대비하여 안전하게 조회
+        String typeCategoryName = "N/A"; // 기본값 설정
+        if (prompt.getClassifications() != null && prompt.getClassifications().getTypeCategory() != null) {
+            typeCategoryName = prompt.getClassifications().getTypeCategory().getTypeName();
+        }
+
+        // 2. reviews 컬렉션이 null이 아닐 경우에만 평균 평점 계산
+        double averageRate = 0.0;
+        if (prompt.getReviews() != null && !prompt.getReviews().isEmpty()) {
+            averageRate = prompt.getReviews().stream()
+                    .mapToDouble(PromptReview::getRate)
+                    .average()
+                    .orElse(0.0);
+        }
+
+        // 3. purchases 컬렉션이 null이 아닐 경우에만 판매 수 계산
+        int salesCount = 0;
+        if (prompt.getPurchases() != null) {
+            salesCount = prompt.getPurchases().size();
+        }
+
+        // 4. tags 컬렉션이 null이 아닐 경우에만 해시태그 목록 생성
+        List<String> hashTags = new ArrayList<>();
+        if (prompt.getTags() != null) {
+            hashTags = prompt.getTags().stream().map(Tag::getName).toList();
+        }
+
         return PromptSummaryDto.builder()
                 .promptId(prompt.getPromptId())
                 .promptName(prompt.getPromptName())
@@ -94,17 +126,28 @@ public class HomePageServiceImpl implements HomePageService {
                 .aiInspectionRate(prompt.getAiInspectionRate())
                 .createdAt(prompt.getCreatedAt())
                 .description(prompt.getPromptName())
-                .typeCategory(prompt.getClassifications().getTypeCategory().getTypeName())
-                .rate(prompt.getReviews().stream().mapToDouble(PromptReview::getRate).average().orElse(0.0))
-                .salesCount(prompt.getPurchases().size())
-                .hashTags(prompt.getTags().stream().map(Tag::getName).toList())//해시태그 데이터 넣어야함
+                .typeCategory(typeCategoryName) // 안전하게 조회한 값 사용
+                .rate(averageRate)             // 안전하게 계산한 값 사용
+                .salesCount(salesCount)        // 안전하게 계산한 값 사용
+                .hashTags(hashTags)            // 안전하게 생성한 리스트 사용
                 .build();
     }
 
-    public PromptDetailDTO getPromptDetailDto(Prompt prompt) {
+    public PromptDetailDTO getPromptDetailDto(String auth0Id , Prompt prompt) {
         String ownerName = (prompt.getOwnerID() != null && prompt.getOwnerID().getProfileName() != null)
                 ? prompt.getOwnerID().getProfileName()
                 : "Unknown";
+
+        boolean isBookmarked = false;
+        // auth0Id가 존재할 경우 (로그인한 사용자일 경우) 위시리스트 확인
+        if (StringUtils.hasText(auth0Id)) {
+            Optional<Users> userOptional = userRepository.findByAuth0Id(auth0Id);
+            if (userOptional.isPresent()) {
+                Users currentUser = userOptional.get();
+                // 현재 사용자와 프롬프트로 위시리스트에 있는지 확인
+                isBookmarked = wishlistRepository.existsByUserAndPrompt(currentUser, prompt);
+            }
+        }
 
         return PromptDetailDTO.builder()
                 .id(prompt.getPromptId())
@@ -118,6 +161,9 @@ public class HomePageServiceImpl implements HomePageService {
                 .aiInspectionRate(prompt.getAiInspectionRate())
                 .createdAt(prompt.getCreatedAt())
                 .reviews(promptReviewsRepository.findAllByPromptIdAsDTO(prompt.getPromptId()))
+                .averageRating(promptReviewsRepository.findAverageRateByPromptId(prompt.getPromptId()).orElse(0.0))
+                .isBookmarked(isBookmarked)
+                .auth0id(prompt.getOwnerID().getAuth0Id())
                 .build();
     }
 }

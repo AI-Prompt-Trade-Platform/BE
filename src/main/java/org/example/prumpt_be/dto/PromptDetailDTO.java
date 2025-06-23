@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 public class PromptDetailDTO {
     private Long id; //프롬프트 ID
+    private String auth0id; //JWT ID
     private String title; //프롬프트 제목
     private String description; //프롬프트에 대한 설명
     private String content; //프롬프트 본문
