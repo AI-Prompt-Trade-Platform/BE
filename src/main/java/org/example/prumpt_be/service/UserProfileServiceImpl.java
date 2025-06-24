@@ -81,7 +81,6 @@ public class UserProfileServiceImpl implements UserProfileService {
         return convertToUserProfileDto(user);
     }
 
-
     /**
      * 이미지 업데이트를 통합 처리하는 헬퍼 메서드입니다.
      * 기존 이미지를 S3에서 삭제하고, 새 이미지를 업로드한 후 URL을 반환합니다.
