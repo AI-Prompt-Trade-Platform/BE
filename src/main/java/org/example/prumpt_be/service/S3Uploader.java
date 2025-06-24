@@ -4,20 +4,25 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
 
+// SLF4J 로거를 위한 import 추가
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-// ObjectCannedACL을 import 합니다.
-import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 @Service
 public class S3Uploader {
+
+    // 로거 인스턴스 생성
+    private static final Logger log = LoggerFactory.getLogger(S3Uploader.class);
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
@@ -39,38 +44,68 @@ public class S3Uploader {
         this.defaultBucketName = defaultBucketName;
     }
 
-    /**
-     * MultipartFile을 S3에 업로드하고, CloudFront URL을 반환합니다.
-     * 업로드된 파일은 공개(public-read)로 설정됩니다.
-     */
-    public String upload(MultipartFile multipartFile, String bucketName, String dirName) throws IOException {
+    public String upload(MultipartFile multipartFile, String dirName) throws IOException {
         if (multipartFile == null || multipartFile.isEmpty()) {
             throw new IllegalArgumentException("업로드할 파일이 없습니다.");
         }
 
         String extension = StringUtils.getFilenameExtension(multipartFile.getOriginalFilename());
-        String key = String.join("/", dirName, UUID.randomUUID().toString() + "." + extension);
+        String key = String.join("/", dirName, UUID.randomUUID() + "." + extension);
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
+                .bucket(this.defaultBucketName)
                 .key(key)
                 .contentType(multipartFile.getContentType())
-                // --- 이 부분을 추가하여 파일을 공개로 설정합니다 ---
-                .acl(ObjectCannedACL.PUBLIC_READ)
+                // .acl(ObjectCannedACL.PUBLIC_READ) // <-- 이 라인을 제거했습니다.
                 .build();
 
-        s3Client.putObject(
-                putObjectRequest,
-                RequestBody.fromInputStream(multipartFile.getInputStream(), multipartFile.getSize())
-        );
+        try {
+            s3Client.putObject(
+                    putObjectRequest,
+                    RequestBody.fromInputStream(multipartFile.getInputStream(), multipartFile.getSize())
+            );
+            log.info("S3에 파일이 성공적으로 업로드되었습니다. Key: {}", key);
+        } catch (SdkException e) {
+            // 로거를 사용하여 상세한 오류 정보를 기록합니다.
+            log.error("S3 파일 업로드 실패. Key: {}", key, e);
+            // 트랜잭션 롤백 등을 보장하기 위해 예외를 다시 던져줍니다.
+            throw new RuntimeException("S3 파일 업로드에 실패했습니다.", e);
+        }
 
         return "https://" + cloudFrontDomain + "/" + key;
     }
 
-    // ... (delete 및 다른 메서드는 그대로 유지)
-    public String generatePresignedUrl(String bucketName, String key) {
+    public void delete(String fileUrl) {
+        if (fileUrl == null || fileUrl.isBlank()) {
+            return;
+        }
+
+        String key = extractKeyFromUrl(fileUrl);
+        if (key == null) {
+            log.warn("URL에서 S3 키를 추출할 수 없습니다: {}", fileUrl);
+            return;
+        }
+
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                .bucket(this.defaultBucketName)
+                .key(key)
+                .build();
+
+        try {
+            s3Client.deleteObject(deleteObjectRequest);
+            log.info("S3에서 파일이 성공적으로 삭제되었습니다. Key: {}", key);
+        } catch (SdkException e) {
+            // 로거를 사용하여 상세한 오류 정보를 기록합니다.
+            log.error("S3 파일 삭제 실패. Key: {}", key, e);
+            // 비즈니스 로직에 따라 이 예외를 다시 던질 수도 있습니다.
+            // throw new RuntimeException("S3 파일 삭제에 실패했습니다.", e);
+        }
+    }
+
+    // generatePresignedUrl, extractKeyFromUrl 메서드는 변경 없음
+    public String generatePresignedUrl(String key) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucketName)
+                .bucket(this.defaultBucketName)
                 .key(key)
                 .build();
 
@@ -82,30 +117,6 @@ public class S3Uploader {
         return s3Presigner.presignGetObject(presignRequest)
                 .url()
                 .toString();
-    }
-
-    public void delete(String fileUrl, String bucketName) {
-        if (fileUrl == null || fileUrl.isBlank()) {
-            return;
-        }
-
-        try {
-            String key = extractKeyFromUrl(fileUrl);
-
-            if (key == null) {
-                return;
-            }
-
-            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                    .bucket(this.defaultBucketName)
-                    .key(key)
-                    .build();
-
-            s3Client.deleteObject(deleteObjectRequest);
-
-        } catch (S3Exception e) {
-            System.err.println("S3 파일 삭제 중 오류 발생: " + e.awsErrorDetails().errorMessage());
-        }
     }
 
     private String extractKeyFromUrl(String fileUrl) {

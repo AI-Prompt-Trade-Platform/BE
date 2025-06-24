@@ -1,4 +1,4 @@
-package org.example.prumpt_be.config; // 패키지 경로는 프로젝트 구조에 맞게 조정하세요.
+package org.example.prumpt_be.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,33 +12,51 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 @Configuration
 public class AwsS3Config {
 
-    @Value("${aws.s3.region}") // application.properties 또는 application.yml 에 설정된 값
+    @Value("${aws.s3.region}")
     private String region;
 
-    @Value("${aws.credentials.access-key}") // application.properties 또는 application.yml 에 설정된 값
+    @Value("${aws.credentials.access-key}")
     private String accessKey;
 
-    @Value("${aws.credentials.secret-key}") // application.properties 또는 application.yml 에 설정된 값
+    @Value("${aws.credentials.secret-key}")
     private String secretKey;
 
+    /**
+     * 재사용 가능한 단일 AWS 자격증명 제공자(Credentials Provider) Bean을 생성합니다.
+     * 이렇게 하면 다른 Bean에서 자격증명 생성 로직이 중복되는 것을 방지할 수 있습니다.
+     * 참고: 운영 환경에서는 키를 직접 사용하는 것보다 IAM 역할(EC2의 경우 Instance Profile)을
+     * 사용하는 것이 더 안전하며, Spring Boot가 이를 자동으로 감지할 수 있습니다.
+     * @return AWS 서비스를 위한 정적 자격증명 제공자.
+     */
     @Bean
-    public S3Client s3Client() {
-        // AWS 자격 증명 설정 방법은 다양합니다.
-        // 여기서는 application.properties에서 직접 읽어오는 방식을 사용합니다.
-        // EC2 인스턴스 프로파일, 환경 변수 등을 사용하는 것이 더 안전하고 권장됩니다.
+    public StaticCredentialsProvider awsCredentialsProvider() {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+        return StaticCredentialsProvider.create(credentials);
+    }
+
+    /**
+     * S3Client Bean을 설정하며, 공유된 자격증명 제공자를 주입받습니다.
+     * @param credentialsProvider 공유된 StaticCredentialsProvider Bean.
+     * @return 설정이 완료된 S3Client 인스턴스.
+     */
+    @Bean
+    public S3Client s3Client(StaticCredentialsProvider credentialsProvider) {
         return S3Client.builder()
                 .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .credentialsProvider(credentialsProvider) // 주입받은 Bean 사용
                 .build();
     }
 
+    /**
+     * S3Presigner Bean을 설정하며, 공유된 자격증명 제공자를 주입받습니다.
+     * @param credentialsProvider 공유된 StaticCredentialsProvider Bean.
+     * @return 설정이 완료된 S3Presigner 인스턴스.
+     */
     @Bean
-    public S3Presigner s3Presigner() {
-        AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, secretKey);
+    public S3Presigner s3Presigner(StaticCredentialsProvider credentialsProvider) {
         return S3Presigner.builder()
                 .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .credentialsProvider(credentialsProvider) // 주입받은 Bean 사용
                 .build();
     }
 }

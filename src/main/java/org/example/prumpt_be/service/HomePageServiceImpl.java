@@ -38,13 +38,13 @@ public class HomePageServiceImpl implements HomePageService {
 
     @Override
     public PageResponseDto<PromptSummaryDto> getPopularPrompts(Pageable pageable) {
-        Page<Prompt> popularPromptsPage = promptRepository.findAll(pageable);
+        Page<Prompt> popularPromptsPage = promptRepository.findPopularPrompts(pageable);
         return new PageResponseDto<>(popularPromptsPage.map(this::convertToPromptSummaryDto));
     }
 
     @Override
     public PageResponseDto<PromptSummaryDto> getRecentPrompts(Pageable pageable) {
-        Page<Prompt> recentPromptsPage = promptRepository.findAll(pageable);
+        Page<Prompt> recentPromptsPage = promptRepository.findPromptsByAverageRatingDesc(pageable);
         return new PageResponseDto<>(recentPromptsPage.map(this::convertToPromptSummaryDto));
     }
 

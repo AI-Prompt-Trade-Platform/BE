@@ -4,11 +4,9 @@ import org.example.prumpt_be.dto.PromptDetailDTO;
 import org.example.prumpt_be.dto.request.UserProfileUpdateDto;
 import org.example.prumpt_be.dto.response.PageResponseDto;
 import org.example.prumpt_be.dto.response.PurchasedPromptDto;
-import org.example.prumpt_be.dto.response.SellingPromptDto;
 import org.example.prumpt_be.dto.response.UserProfileDto;
 import org.example.prumpt_be.service.UserProfileService;
 import org.example.prumpt_be.service.UserPromptService;
-import org.example.prumpt_be.service.UserPromptServiceImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -16,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-// import org.springframework.security.core.annotation.AuthenticationPrincipal; // Spring Security 사용 시
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -81,18 +78,6 @@ public class UserProfileController {
         PageResponseDto<PurchasedPromptDto> purchasedPrompts = userPromptService.getMyPurchasedPrompts(auth0Id, pageable);
         return ResponseEntity.ok(purchasedPrompts);
     }
-
-//    @Operation(summary = "내가 판매중인 프롬프트 목록 조회", description = "현재 사용자가 판매 중인 프롬프트 목록을 페이지네이션하여 조회합니다.")
-//    @GetMapping("/prompts/selling")
-//    public ResponseEntity<PageResponseDto<SellingPromptDto>> getMySellingPrompts(
-//            @AuthenticationPrincipal Jwt jwt,
-//            @Parameter(description = "페이지 정보. 예: page=0&size=10&sort=createdAt,desc")
-//            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-//        // JWT로 유저 ID 조회
-//        String auth0Id = jwt.getSubject(); // JWT에서 Auth0 ID 추출
-//        PageResponseDto<SellingPromptDto> sellingPrompts = userPromptService.getMySellingPrompts(auth0Id, pageable);
-//        return ResponseEntity.ok(sellingPrompts);
-//    }
 
     @Operation(summary = "내가 판매중인 프롬프트 목록 조회", description = "현재 사용자가 판매 중인 프롬프트의 상세 정보 목록을 페이지네이션하여 조회합니다.")
     @GetMapping("/prompts/selling")

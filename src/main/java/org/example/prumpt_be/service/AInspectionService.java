@@ -3,7 +3,6 @@ package org.example.prumpt_be.service;
 import org.example.prumpt_be.dto.entity.Prompt;
 import org.example.prumpt_be.dto.request.PromptUploadRequestDto;
 import org.example.prumpt_be.repository.PromptRepository;
-import org.springframework.beans.factory.annotation.Value; // Value 어노테이션 추가
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -15,17 +14,8 @@ public class AInspectionService {
     private final OpenAiService openAiService;
     private final PromptRepository promptRepository;
 
-    // application.properties에서 각 버킷 이름 주입
-    @Value("${aws.s3.bucket.text}")
-    private String textBucketName;
-
-    @Value("${aws.s3.bucket.image}")
-    private String imageBucketName;
-
-    @Value("${aws.s3.bucket.video}")
-    private String videoBucketName;
-
-
+    // 여러 버킷 이름을 주입받던 코드를 모두 제거합니다.
+    // 생성자도 자동으로 수정됩니다.
     public AInspectionService(S3Uploader s3Uploader, OpenAiService openAiService, PromptRepository promptRepository) {
         this.s3Uploader = s3Uploader;
         this.openAiService = openAiService;
@@ -38,37 +28,21 @@ public class AInspectionService {
 
         if (exampleFile != null && !exampleFile.isEmpty()) {
             try {
-                String dirName; // S3 내에서의 폴더 구조 (예: "uploads", "public" 등 또는 타입별로 다르게)
-                String targetBucketName;
+                // 1. 파일 타입에 따라 S3에 저장될 폴더 이름(dirName)만 결정합니다.
+                //    버킷 이름은 S3Uploader가 내부적으로 알고 있으므로 더 이상 필요 없습니다.
+                String dirName = switch (request.getExampleType()) {
+                    case TEXT -> "prompts/text";    // 예: prompts/text 폴더에 저장
+                    case IMAGE -> "prompts/image";   // 예: prompts/image 폴더에 저장
+                    case VIDEO -> "prompts/video";   // 예: prompts/video 폴더에 저장
+                    default -> throw new IllegalArgumentException("지원하지 않는 파일 타입입니다: " + request.getExampleType());
+                };
 
-                switch (request.getExampleType()) {
-                    case TEXT:
-                        dirName = "text_files"; // 예시 S3 디렉토리 이름
-                        targetBucketName = textBucketName;
-                        exampleUrl = s3Uploader.upload(exampleFile, targetBucketName, dirName);
-                        break;
-                    case IMAGE:
-                        dirName = "image_files"; // 예시 S3 디렉토리 이름
-                        targetBucketName = imageBucketName;
-                        exampleUrl = s3Uploader.upload(exampleFile, targetBucketName, dirName);
-                        break;
-                    case VIDEO:
-                        dirName = "video_files"; // 예시 S3 디렉토리 이름
-                        targetBucketName = videoBucketName;
-                        exampleUrl = s3Uploader.upload(exampleFile, targetBucketName, dirName);
-                        break;
-                    default:
-                        // 기본 버킷을 사용하거나 예외 처리
-                         throw new IllegalArgumentException("지원하지 않는 파일 타입 또는 파일 누락: " + request.getExampleType());
-                        // 여기서는 기존 exampleUrl을 유지하거나, 혹은 공통 버킷을 사용할 수 있습니다.
-                        // 예를 들어, 공통 버킷이 있다면:
-                        // targetBucketName = commonBucketName; // @Value로 주입 필요
-                        // dirName = "others";
-                        // exampleUrl = s3Uploader.upload(exampleFile, targetBucketName, dirName);
-//                        break; // 또는 예외 발생
-                }
+                // 2. 수정된 S3Uploader의 upload 메소드를 호출합니다. (dirName만 전달)
+                exampleUrl = s3Uploader.upload(exampleFile, dirName);
+
             } catch (IOException e) {
-                throw new RuntimeException("S3 파일 업로드 중 오류 발생: " + e.getMessage(), e);
+                // 프로덕션 환경에서는 로깅 라이브러리(e.g., SLF4J) 사용을 권장합니다.
+                throw new RuntimeException("S3 파일 업로드 중 오류가 발생했습니다.", e);
             }
         }
 
@@ -76,27 +50,27 @@ public class AInspectionService {
         Prompt prompt = promptRepository.findById(promptId)
                 .orElseThrow(() -> new IllegalArgumentException("Prompt not found with id: " + promptId));
 
+        // 파일이 업로드된 경우, S3 URL로 Prompt 엔티티를 업데이트합니다.
         if (exampleFile != null && !exampleFile.isEmpty()) {
-            // Prompt 엔티티의 exampleContentUrl 필드에 저장 (스키마에 따라 필드명 확인 필요)
             prompt.setExampleContentUrl(exampleUrl);
         }
 
+        // OpenAI 평가를 위해 DTO를 생성하고 URL을 설정합니다.
         PromptUploadRequestDto targetPrompt = PromptUploadRequestDto.fromEntity(prompt);
-        // fromEntity에서 exampleValue를 설정했다면 아래 라인은 필요 없을 수 있음
-        // 또는 S3 업로드 후 URL로 항상 덮어쓰려면 유지
-        targetPrompt.setExampleValue(exampleUrl);
+        targetPrompt.setExampleValue(prompt.getExampleContentUrl()); // DB에 저장된 최신 URL을 사용
         targetPrompt.setExampleType(request.getExampleType());
 
-
+        // OpenAI 서비스로 평가 요청
         String inspectionResult = openAiService.getInspectionRate(makePromptForStock(targetPrompt));
         System.out.println(inspectionResult);
 
+        // 평가 결과를 DB에 저장
         prompt.setAiInspectionRate(inspectionResult);
         promptRepository.save(prompt);
     }
 
     // makePromptForStock 및 하위 메소드들은 변경 없음
-    private String makePromptForStock(PromptUploadRequestDto promptDto) { // DTO를 그대로 사용
+    private String makePromptForStock(PromptUploadRequestDto promptDto) {
         return switch (promptDto.getExampleType()) {
             case TEXT -> makePromptForText(promptDto.getPromptBody(), promptDto.getExampleValue());
             case IMAGE -> makePromptForImage(promptDto.getPromptBody(), promptDto.getExampleValue());
@@ -109,6 +83,7 @@ public class AInspectionService {
     private String makePromptForText(String promptBody, String exampleText) {
         return String.format(
                 """
+                        너는 프롬프트를 읽고, 프롬프트의 내용이 URL로 함께 제공된 예시 결과물을 만들어 낼 수 있는지 정확도를 평가하는 "프롬프트 엔지니어"야.
                         아래 기준에 따라 텍스트 생성 프롬프트와 예시 결과물의 유사도를 평가해 [S, A, B, C, D] 등급 중 하나를 부여해줘.
                         
                         1. 프롬프트 내용: %s
@@ -125,10 +100,11 @@ public class AInspectionService {
                            - A: 대부분의 요구사항을 충족하나, 한두 가지 측면에서 매우 사소한 차이나 아쉬움
                            - B: 핵심 내용은 맞으나 형식/톤/완성도 중 일부에서 중간 정도의 차이나 부족함
                            - C: 기본 주제는 맞으나 여러 측면에서 프롬프트 의도와 상당한 차이
-                           - D: 주제조차 맞지 않거나 텍스트 품질이 현저히 낮음
+                           - D: 주제조차 맞지 않거나 텍스트 품질이 현저히 낮음. 혹은 평가가 불가능함
                         
                         4. 등급은 오직 하나만 선택.
                           반드시 아래 응답 포맷을 지켜줘.
+                          만약 평가할 수가 없는 상황일떄에는 등급을 X 로 하고, 이유를 짧게 "~함" 같은 말투로 끝내줘
                         
                         5. **응답 포맷:**
                           `[등급알파벳] (띄어쓰기) [아주 짧게 이 등급을 준 이유를 한 문장으로 설명]` 
@@ -146,6 +122,7 @@ public class AInspectionService {
     private String makePromptForImage(String promptBody, String exampleImageUrl) {
         return String.format(
                 """
+                        너는 프롬프트를 읽고, 프롬프트의 내용이 URL로 함께 제공된 예시 결과물을 만들어 낼 수 있는지 정확도를 평가하는 "프롬프트 엔지니어"야.
                         아래 기준에 따라 이미지 생성 프롬프트와 예시 결과물(URL)의 유사도를 평가해 [S, A, B, C, D] 등급 중 하나를 부여해줘.
                         
                         1. 프롬프트 내용: %s
@@ -161,10 +138,12 @@ public class AInspectionService {
                             - A: 대부분의 요구사항을 충족하나, 한두 가지 측면에서 매우 사소한 차이나 아쉬움
                             - B: 핵심 시각 요소는 맞으나 구도/스타일/디테일 중 일부에서 중간 정도의 차이나 부족함
                             - C: 기본 주제는 맞으나 여러 시각적 측면에서 프롬프트 의도와 상당한 차이
-                            - D: 주요 객체나 테마조차 맞지 않거나 이미지 품질이 현저히 낮음
+                            - D: 주요 객체나 테마조차 맞지 않거나 이미지 품질이 현저히 낮음. 혹은 평가가 불가능함
                         
                         4. 등급은 오직 하나만 선택.
                            반드시 아래 응답 포맷을 지켜줘.
+                           만약 평가할 수가 없는 상황일떄에는 등급을 X 로 하고, 이유를 짧게 "~함" 같은 말투로 끝내줘
+
                         
                         5. **응답 포맷:** 
                            `[등급알파벳] (띄어쓰기) [아주 짧게 이 등급을 준 이유를 한 문장으로 설명]` 
@@ -181,6 +160,7 @@ public class AInspectionService {
     private String makePromptForVideo(String promptBody, String exampleVideoUrl) {
         return String.format(
                 """
+                        너는 프롬프트를 읽고, 프롬프트의 내용이 URL로 함께 제공된 예시 결과물을 만들어 낼 수 있는지 정확도를 평가하는 "프롬프트 엔지니어"야.
                         아래 기준에 따라 영상 생성 프롬프트와 예시 결과물(URL)의 유사도를 평가해 [S, A, B, C, D] 등급 중 하나를 부여해줘.
                         
                         1. 프롬프트 내용: %s
@@ -196,10 +176,11 @@ public class AInspectionService {
                             - A: 대부분의 요구사항을 충족하나, 한두 가지 측면에서 매우 사소한 차이나 아쉬움
                             - B: 핵심 내용은 맞으나 시퀀스/스타일/완성도 중 일부에서 중간 정도의 차이나 부족함
                             - C: 기본 장면은 맞으나 여러 측면에서 프롬프트 의도와 상당한 차이
-                            - D: 주요 장면이나 액션조차 맞지 않거나 영상 품질이 현저히 낮음
+                            - D: 주요 장면이나 액션조차 맞지 않거나 영상 품질이 현저히 낮음. 혹은 평가가 불가능함
                         
                         4. 등급은 오직 하나만 선택.
                            반드시 아래 응답 포맷을 지켜줘.
+                           만약 평가할 수가 없는 상황일떄에는 등급을 X 로 하고, 이유를 짧게 "~함" 같은 말투로 끝내줘
                         
                         5. **응답 포맷:**
                            `[등급알파벳] (띄어쓰기) [아주 짧게 이 등급을 준 이유를 한 문장으로 설명]` 
