@@ -27,7 +27,20 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
     Optional<Prompt> findById(Long id);
 
     // 최근 등록된 프롬프트 (홈 화면) -> Pageable에 정렬 정보가 있으므로 findAll로 대체 가능
-    // Page<Prompt> findAllByOrderByCreatedAtDesc(Pageable pageable);
+     Page<Prompt> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    /**
+     * 가장 많이 판매된 순서(인기순)로 프롬프트를 조회합니다.
+     * 판매량이 같은 경우에는 최신 등록순으로 정렬합니다.
+     *
+     * @param pageable 페이지네이션 정보
+     * @return 인기순으로 정렬된 프롬프트 페이지
+     */
+    @Query("SELECT p FROM Prompt p " +
+            "LEFT JOIN p.purchases pur " +      // Prompt(p)와 PromptPurchase(pur)를 조인
+            "GROUP BY p.promptId " +            // 각 프롬프트를 기준으로 그룹화
+            "ORDER BY COUNT(pur) DESC, p.createdAt DESC") // 구매(pur) 수로 내림차순 정렬, 같으면 최신순
+    Page<Prompt> findPopularPrompts(Pageable pageable);
 
     // 특정 사용자가 소유한 프롬프트 목록 (마이페이지 - 판매중인 프롬프트)
     Page<Prompt> findByOwnerIDOrderByCreatedAtDesc(Users owner, Pageable pageable);
@@ -37,8 +50,20 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
     Page<Prompt> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     // (임시 인기 기준) 가격 높은 순 -> Pageable에 정렬 정보가 있으므로 findAll로 대체 가능
-    // Page<Prompt> findAllByOrderByPriceDesc(Pageable pageable);
+     Page<Prompt> findAllByOrderByPriceDesc(Pageable pageable);
 
+    /**
+     * 평균 별점이 높은 순서로 프롬프트를 조회합니다.
+     * 별점이 없는 프롬프트는 0점으로 간주하며, 별점이 같은 경우에는 최신 등록순으로 정렬합니다.
+     *
+     * @param pageable 페이지네이션 정보
+     * @return 평균 별점순으로 정렬된 프롬프트 페이지
+     */
+    @Query("SELECT p FROM Prompt p " +
+            "LEFT JOIN p.reviews r " +
+            "GROUP BY p.promptId " +
+            "ORDER BY COALESCE(AVG(r.rate), 0.0) DESC, p.createdAt DESC")
+    Page<Prompt> findPromptsByAverageRatingDesc(Pageable pageable);
 
     /**
      * 모델 카테고리 슬러그 및/또는 타입 카테고리 슬러그로 프롬프트를 필터링하여 조회합니다.

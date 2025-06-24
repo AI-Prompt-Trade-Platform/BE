@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS prompts (
         ai_inspection_rate  VARCHAR(255)                         COMMENT 'AI 검수 등급',
         example_content_url VARCHAR(255)                         COMMENT '예시 콘텐츠 URL',
         description         TEXT                                  COMMENT '썸네일에서 보기 편하게 하기 위한 필드',
-        model               TEXT                                  COMMENT 'AI 모델 정보 (JSON 등)',
+        model               TEXT                                  COMMENT 'AI 모델 정보 ',
         owner_id            INT          NOT NULL                COMMENT '프롬프트 소유자(유저) ID',
         created_at          DATETIME     NOT NULL                COMMENT '생성 시각',
         updated_at          DATETIME                             COMMENT '수정 시각',

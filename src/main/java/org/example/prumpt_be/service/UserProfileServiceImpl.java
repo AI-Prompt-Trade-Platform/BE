@@ -6,7 +6,7 @@ import org.example.prumpt_be.dto.response.UserProfileDto;
 import org.example.prumpt_be.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+// import org.springframework.beans.factory.annotation.Value; // 더 이상 필요하지 않으므로 제거합니다.
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.io.IOException;
-// import org.springframework.security.core.context.SecurityContextHolder; // Spring Security 사용 시
-// import org.springframework.security.core.userdetails.UsernameNotFoundException; // 적절한 예외 사용
 
 /**
  * UserProfileService의 구현체입니다.
@@ -26,8 +24,10 @@ import java.io.IOException;
 public class UserProfileServiceImpl implements UserProfileService {
     private static final Logger log = LoggerFactory.getLogger(UserProfileServiceImpl.class);
 
-    @Value("${aws.s3.bucket.default}")
-    private String defaultBucketName;
+    // S3Uploader가 버킷 이름을 관리하므로 이 필드는 더 이상 필요 없습니다.
+    // @Value("${aws.s3.bucket.default}")
+    // private String defaultBucketName;
+
     private final UserRepository userRepository;
     private final S3Uploader s3Uploader;
 
@@ -35,55 +35,27 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Transactional(readOnly = true)
     public UserProfileDto getUserProfile(String auth0Id) {
         Users user = userRepository.findByAuth0Id(auth0Id)
-                .orElseThrow(() -> new RuntimeException("User not found with auth0id: " + auth0Id)); // TODO: 적절한 예외 클래스 사용
+                .orElseThrow(() -> new EntityNotFoundException("User not found with auth0id: " + auth0Id));
         return convertToUserProfileDto(user);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public UserProfileDto getCurrentUserProfile(String auth0Id) {
-        // String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName(); // Spring Security 사용 시
         Users user = userRepository.findByAuth0Id(auth0Id)
-                .orElseThrow(() -> new RuntimeException("User not found with auth0Id: " + auth0Id)); // TODO: UserNotFoundException 등
+                .orElseThrow(() -> new EntityNotFoundException("User not found with auth0Id: " + auth0Id));
         return convertToUserProfileDto(user);
     }
 
     @Override
     @Transactional
     public UserProfileDto updateCurrentUserProfile(String auth0Id, UserProfileUpdateDto updateDto) {
-        // --- 디버깅을 위한 로그 추가 ---
         log.info(">>> 프로필 업데이트 요청 수신. auth0Id: {}", auth0Id);
-        if (updateDto != null) {
-            log.info(">>> DTO 내용 - profileName: '{}'", updateDto.getProfileName());
-            log.info(">>> DTO 내용 - introduction: '{}'", updateDto.getIntroduction());
-
-            // profileImg (MultipartFile) 정보 로깅
-            MultipartFile profileImgFile = updateDto.getProfileImg();
-            if (profileImgFile != null) {
-                log.info(">>> DTO 내용 - profileImg 파일 존재 여부: {}, 파일 이름: '{}', 파일 크기: {} bytes",
-                        !profileImgFile.isEmpty(), profileImgFile.getOriginalFilename(), profileImgFile.getSize());
-            } else {
-                log.info(">>> DTO 내용 - profileImg: null (파일 없음)");
-            }
-
-            // bannerImg (MultipartFile) 정보 로깅
-            MultipartFile bannerImgFile = updateDto.getBannerImg();
-            if (bannerImgFile != null) {
-                log.info(">>> DTO 내용 - bannerImg 파일 존재 여부: {}, 파일 이름: '{}', 파일 크기: {} bytes",
-                        !bannerImgFile.isEmpty(), bannerImgFile.getOriginalFilename(), bannerImgFile.getSize());
-            } else {
-                log.info(">>> DTO 내용 - bannerImg: null (파일 없음)");
-            }
-
-        } else {
-            log.warn(">>> updateDto가 null입니다. 요청 본문이 비어있거나 파싱에 실패했습니다.");
-        }
-        // --- 여기까지 ---
+        // ... (기존 로깅 로직은 그대로 유지)
 
         Users user = userRepository.findByAuth0Id(auth0Id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found with auth0Id: " + auth0Id));
 
-        // ... (기존 로직 계속)
         // 텍스트 기반 필드 업데이트
         if (updateDto.getProfileName() != null && !updateDto.getProfileName().isBlank()) {
             user.setProfileName(updateDto.getProfileName());
@@ -93,12 +65,14 @@ public class UserProfileServiceImpl implements UserProfileService {
         }
 
         try {
-            // 프로필 이미지 업데이트 처리 (기존 파일 삭제 -> 새 파일 업로드)
-            String newProfileImgUrl = processImageUpdate(updateDto.getProfileImg(), user.getProfileImg_url(), "user-profiles");
+            // 프로필 이미지 업데이트 처리
+            // S3에 저장될 폴더 이름으로 "profile"을 전달합니다.
+            String newProfileImgUrl = processImageUpdate(updateDto.getProfileImg(), user.getProfileImg_url(), "profile");
             user.setProfileImg_url(newProfileImgUrl);
 
-            // 배너 이미지 업데이트 처리 (기존 파일 삭제 -> 새 파일 업로드)
-            String newBannerImgUrl = processImageUpdate(updateDto.getBannerImg(), user.getBannerImg_url(), "user-banners");
+            // 배너 이미지 업데이트 처리
+            // S3에 저장될 폴더 이름으로 "banner"를 전달합니다.
+            String newBannerImgUrl = processImageUpdate(updateDto.getBannerImg(), user.getBannerImg_url(), "banner");
             user.setBannerImg_url(newBannerImgUrl);
         } catch (IOException e) {
             throw new RuntimeException("이미지 파일 처리 중 오류가 발생했습니다.", e);
@@ -114,7 +88,7 @@ public class UserProfileServiceImpl implements UserProfileService {
      *
      * @param newFile    새로 업로드할 파일 (null이면 변경 없음, 비어있으면 삭제 요청)
      * @param currentUrl DB에 저장된 현재 이미지 URL
-     * @param directory  S3에 저장할 디렉토리 경로
+     * @param directory  S3에 저장할 디렉토리 경로 (e.g., "profile", "banner")
      * @return DB에 저장할 최종 이미지 URL
      * @throws IOException 파일 처리 중 발생할 수 있는 예외
      */
@@ -124,10 +98,11 @@ public class UserProfileServiceImpl implements UserProfileService {
             return currentUrl;
         }
 
-        // 2. 업데이트 요청이 있으면(파일이 null이 아님), 기존 이미지를 S3에서 삭제합니다.
+        // 2. 업데이트 요청이 있으면, 기존 이미지를 S3에서 삭제합니다.
         //    (currentUrl이 실제로 존재할 경우에만 실행)
         if (currentUrl != null && !currentUrl.isEmpty()) {
-            s3Uploader.delete(defaultBucketName, currentUrl);
+            // 수정된 delete 메서드 호출 (파라미터 1개)
+            s3Uploader.delete(currentUrl);
         }
 
         // 3. 새 파일이 비어있으면(사용자가 '이미지 삭제'를 선택한 경우), null을 반환하여 DB의 URL을 비웁니다.
@@ -136,7 +111,8 @@ public class UserProfileServiceImpl implements UserProfileService {
         }
 
         // 4. 새 파일이 실제로 존재하면 S3에 업로드하고, 반환된 새 URL을 반환합니다.
-        return s3Uploader.upload(newFile, defaultBucketName, directory);
+        //    수정된 upload 메서드 호출 (파라미터 2개)
+        return s3Uploader.upload(newFile, directory);
     }
 
 
