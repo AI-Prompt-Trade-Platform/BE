@@ -3,6 +3,7 @@ package org.example.prumpt_be.config.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -31,6 +32,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 // 2. 세션을 생성하지 않게 설정
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(Customizer.withDefaults())
+
                 // 3. 인가(authorization) 규칙 설정
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/prompts/**").permitAll() // "/api/public/**" 엔드포인트는 모두 허용
