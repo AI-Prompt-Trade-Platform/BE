@@ -119,7 +119,7 @@ public class S3Uploader {
                 .toString();
     }
 
-    private String extractKeyFromUrl(String fileUrl) {
+    public String extractKeyFromUrl(String fileUrl) {
         String prefix = "https://" + this.cloudFrontDomain + "/";
         if (fileUrl.startsWith(prefix)) {
             return fileUrl.substring(prefix.length());
