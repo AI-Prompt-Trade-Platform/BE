@@ -1,0 +1,18 @@
+# Gradle cache and build outputs
+.gradle
+build/
+
+# IDE-specific files
+.idea/
+*.iml
+*.iws
+
+# Local environment file (should not be in the image)
+.env
+
+
+# OS-specific files
+.DS_Store
+
+# Log files
+*.log
