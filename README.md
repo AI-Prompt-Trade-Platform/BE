@@ -1,19 +1,12 @@
 
-**AI-Powered Prompt Trading Platform** 
+# AI-Powered Prompt Trading Platform
 
-[Static Badge](https://img.shields.io/badge/JAVA-17-red?style=for-the-badge&logo=java&logoColor=white&logoSize=auto)
+![Static Badge](https://img.shields.io/badge/JAVA-17-red?style=for-the-badge&logo=java&logoColor=white&logoSize=auto) ![Static Badge](https://img.shields.io/badge/Spring%20Boot-3.4.5-%236DB33F?style=for-the-badge&logo=spring%20boot&logoColor=white&logoSize=auto) ![Static Badge](https://img.shields.io/badge/MySQL-8.2.0-%234479A1?style=for-the-badge&logo=mysql&logoColor=white&logoSize=auto)
 
-[Static Badge](https://img.shields.io/badge/Auth0-1.5.3-%23EB5424?style=for-the-badge&logo=auth0&logoColor=white&logoSize=auto)
+![Static Badge](https://img.shields.io/badge/AWS-S3-green?style=for-the-badge&logoColor=white&logoSize=auto) ![Static Badge](https://img.shields.io/badge/AWS-ECS-%23F96702?style=for-the-badge&logoColor=white&logoSize=auto)
+![Static Badge](https://img.shields.io/badge/Auth0-1.5.3-%23EB5424?style=for-the-badge&logo=auth0&logoColor=white&logoSize=auto)
 
-[Static Badge](https://img.shields.io/badge/Spring%20Boot-3.4.5-%236DB33F?style=for-the-badge&logo=spring%20boot&logoColor=white&logoSize=auto)
-
-[Static Badge](https://img.shields.io/badge/MySQL-8.2.0-%234479A1?style=for-the-badge&logo=mysql&logoColor=white&logoSize=auto)
-
-[Static Badge](https://img.shields.io/badge/AWS-S3-green?style=for-the-badge&logoColor=white&logoSize=auto)
-
-[Static Badge](https://img.shields.io/badge/AWS-ECS-%23F96702?style=for-the-badge&logoColor=white&logoSize=auto)
-
-[Static Badge](https://img.shields.io/badge/Docker-28.2-%232496ED?style=for-the-badge&logo=docker&logoColor=white&logoSize=auto)
+![Static Badge](https://img.shields.io/badge/Docker-28.2-%232496ED?style=for-the-badge&logo=docker&logoColor=white&logoSize=auto)
 
 **“AI 평가 기반 프롬프트 거래 플랫폼”**
 
@@ -37,4 +30,4 @@ SNS, 블로그 등 프롬프트 거래 플랫폼의 부재로 개인간의 거�
 
 ## 🏗️ 시스템 아키텍처
 
-[Prumpt컴포넌트다이어그램.pdf](attachment:0f72004e-85c6-4987-845f-395afb6fb13e:Prumpt컴포넌트다이어그램.pdf)
+![Prumpt컴포넌트다이어그램.pdf](attachment:0f72004e-85c6-4987-845f-395afb6fb13e:Prumpt컴포넌트다이어그램.pdf)
